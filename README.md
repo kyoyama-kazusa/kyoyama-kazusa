@@ -10,4 +10,4 @@ If you are interested in Sudoku, or you want to talk with me, please contact me 
 * [👨‍🏫Zhihu (Quora website)](https://www.zhihu.com/people/Sunnie-Shine)
 * [👨‍💻GitHub (Home of programmers)](https://github.com/Sunnie-Shine)
 
-![My github stats](https://github-readme-stats.vercel.app/api?username=Sunnie-Shine)
+![](https://github-readme-stats.vercel.app/api?username=Sunnie-Shine)
