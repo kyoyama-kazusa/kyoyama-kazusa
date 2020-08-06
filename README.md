@@ -11,3 +11,6 @@ If you are interested in Sudoku, or you want to talk with me, please contact me 
 * [👨‍💻GitHub (Home of programmers)](https://github.com/Sunnie-Shine)
 
 ![](https://github-readme-stats.vercel.app/api?username=Sunnie-Shine)
+
+<!--START_SECTION:waka-->
+<!--END_SECTION:waka-->
