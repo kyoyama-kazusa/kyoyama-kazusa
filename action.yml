@@ -1,0 +1,20 @@
+name: Waka Readme
+
+on:
+  schedule:
+    # Runs at 12am IST
+    - cron: '30 18 * * *'
+
+jobs:
+  update-readme:
+    name: Update Readme with Metrics
+    runs-on: ubuntu-latest
+    steps:
+      - uses: Sunnie-Shine/Sunnie-Shine@master
+        with:
+          WAKATIME_API_KEY: ${{ 09fb90be-1f8f-4a22-b2ba-474cff976d18 }}
+          GH_TOKEN: ${{ 4a1135e413e7b0dc1d41dc94ef8e494106130384 }}
+          SHOW_LINES_OF_CODE: "true"
+          SHOW_COMMIT: "true"
+          SHOW_OS: "true"
+          SHOW_SHORT_INFO: "true"
