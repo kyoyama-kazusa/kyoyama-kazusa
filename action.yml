@@ -12,8 +12,8 @@ jobs:
     steps:
       - uses: Sunnie-Shine/Sunnie-Shine@master
         with:
-          WAKATIME_API_KEY: ${{ 09fb90be-1f8f-4a22-b2ba-474cff976d18 }}
-          GH_TOKEN: ${{ 4a1135e413e7b0dc1d41dc94ef8e494106130384 }}
+          WAKATIME_API_KEY: 09fb90be-1f8f-4a22-b2ba-474cff976d18
+          GH_TOKEN: 4a1135e413e7b0dc1d41dc94ef8e494106130384
           SHOW_LINES_OF_CODE: "true"
           SHOW_COMMIT: "true"
           SHOW_OS: "true"
