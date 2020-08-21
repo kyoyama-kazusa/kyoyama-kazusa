@@ -4,6 +4,13 @@ I'm Sunnie, 24, graduated at Sichuan Normal University. I love sudoku. Do you wa
 
 Oh! In fact, sudoku game is my only hobby. :D
 
+
+#### Sudoku Website
+
+Click [here](https://howdysunnie.gitbook.io/sudoku-tutorial/) to know more about sudoku!
+
+This website is under construction.
+
 #### ⚡ Follow me!
 
 If you are interested in Sudoku, or you want to talk with me, please contact me using these specified links as follow:
