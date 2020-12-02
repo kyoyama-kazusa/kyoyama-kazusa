@@ -16,4 +16,4 @@ This website is under construction.
 If you are interested in Sudoku, or you want to talk with me, please contact me using these specified links as follow:
 
 * [🎦Bilibili (Video sharing website)](https://space.bilibili.com/23736703)
-* [👨‍💻GitHub (Home of programmers)](https://github.com/Sunnie-Shine)
+* [👨‍💻GitHub (Home of programmers)](https://github.com/SunnieShine)
