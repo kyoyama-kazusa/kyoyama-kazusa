@@ -1,5 +1,3 @@
-<h1>高考加油！！！</h1>
-
 ### Hi there 👋
 
 I'm Sunnie, 24, graduated at Sichuan Normal University. I love sudoku. Do you want to know other about me?
