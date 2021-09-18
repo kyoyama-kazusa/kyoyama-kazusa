@@ -1,15 +1,12 @@
 ### Hi there 👋
 
-I'm Sunnie, 24, graduated at Sichuan Normal University. I love sudoku. Do you want to know other about me?
+I'm Sunnie, 25, graduated at Sichuan Normal University.
 
 :D
 
-
 #### Sudoku Website
 
-Click [here](https://howdysunnie.gitbook.io/sudoku-tutorial/) to know more about sudoku!
-
-This website is under construction.
+Click [here](https://www.bilibili.com/read/readlist/rl291187) to know more about sudoku!
 
 #### ⚡ Follow me!
 
