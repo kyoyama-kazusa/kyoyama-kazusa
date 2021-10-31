@@ -1,6 +1,6 @@
 ### Hi there 👋
 
-I'm Sunnie, 25, graduated at Sichuan Normal University.
+I'm Sunnie, graduated at Sichuan Normal University.
 
 :D
 
