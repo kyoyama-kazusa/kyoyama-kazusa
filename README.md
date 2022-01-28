@@ -15,10 +15,3 @@ If you are interested in Sudoku, or you want to talk with me, please contact me 
 * [🎦Bilibili (Video sharing website)](https://space.bilibili.com/23736703)
 * [👨‍💻GitHub (Home of programmers)](https://github.com/SunnieShine)
 * [👨‍💻Gitee](https://gitee.com/SunnieShine)
-
-### Sudoku Puzzle
-
-A sudoku puzzle :)
-
-![](Sample.png)
-
