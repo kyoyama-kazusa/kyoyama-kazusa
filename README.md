@@ -14,4 +14,22 @@ If you are interested in Sudoku, or you want to talk with me, please contact me 
 
 * [🎦Bilibili (Video sharing website)](https://space.bilibili.com/23736703)
 * [👨‍💻GitHub (Home of programmers)](https://github.com/SunnieShine)
-* [👨‍💻Gitee](https://gitee.com/SunnieShine)
+
+#### ❤️ Sudoku page
+
+Here I list some websites that I like to visit:
+
+* BBS
+  * [Enjoy Sudoku](http://forum.enjoysudoku.com/)
+  * [Sudoku Programmers](http://programmers.enjoysudoku.com/www.setbb.com/sudoku/)
+* Platform
+  * [独・数之道](http://www.sudokufans.org.cn/) (Chinese)
+  * [Puzzle Madness](https://puzzlemadness.co.uk/)
+* Wiki
+  * [Sudopedia](https://www.sudopedia.org/wiki/Main_Page)
+  * [Sudopedia Mirror](http://sudopedia.enjoysudoku.com/Terminology.html)
+  * [Sudoku Wiki](http://www.sudokuwiki.org/Strategy_Families)
+  * [~~Sudoku Explainer Official Site~~](http://diuf.unifr.ch/pai/people/juillera/Sudoku/Sudoku.html) (Broken)
+  * [Hodoku Official Site](http://hodoku.sourceforge.net/en/techniques.php)
+* Blog
+  * [The Art of ~~Sudokus~~Puzzles](https://www.gmpuzzles.com/blog/)
