@@ -32,4 +32,4 @@ Here I list some websites that I like to visit:
   * [~~Sudoku Explainer Official Site~~](http://diuf.unifr.ch/pai/people/juillera/Sudoku/Sudoku.html) (Broken)
   * [Hodoku Official Site](http://hodoku.sourceforge.net/en/techniques.php)
 * Blog
-  * [The Art of ~~Sudokus~~Puzzles](https://www.gmpuzzles.com/blog/)
+  * [The Art of Sudokus/Puzzles](https://www.gmpuzzles.com/blog/)
