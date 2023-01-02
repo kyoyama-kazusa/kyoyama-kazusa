@@ -1,6 +1,6 @@
-### Hi there 👋
-
 ![](baba.png)
+
+<details>
 
 #### Sudoku Website
 
@@ -11,7 +11,6 @@ Click [here](https://www.bilibili.com/read/readlist/rl291187) to know more about
 If you are interested in Sudoku, or you want to talk with me, please contact me using these specified links as follow:
 
 * [🎦Bilibili (Video sharing website)](https://space.bilibili.com/23736703)
-* [👨‍💻GitHub (Home of programmers)](https://github.com/SunnieShine)
 
 #### ❤️ Sudoku page
 
@@ -31,3 +30,5 @@ Here I list some websites that I like to visit:
   * [Hodoku Official Site](http://hodoku.sourceforge.net/en/techniques.php)
 * Blog
   * [The Art of Sudokus/Puzzles](https://www.gmpuzzles.com/blog/)
+
+</details>
