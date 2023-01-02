@@ -1,8 +1,6 @@
 ### Hi there 👋
 
-I'm Sunnie, graduated at Sichuan Normal University.
-
-:D
+:)
 
 #### Sudoku Website
 
