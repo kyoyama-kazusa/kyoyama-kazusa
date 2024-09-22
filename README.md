@@ -2,7 +2,7 @@
 
 <details>
 
-Hello, I'm Sunnie. I'm glad to see you. :D
+Hello, I'm Kazusa. Glad to see you. :D
  
 #### Sudoku Website
 
