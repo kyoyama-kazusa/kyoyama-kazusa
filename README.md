@@ -1,4 +1,4 @@
-![](sugar_rush_halloween.png)
+![](sugar_rush_halloween.jpg)
 
 <details>
 
