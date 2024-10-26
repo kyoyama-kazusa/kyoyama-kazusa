@@ -1,4 +1,4 @@
-![](baba.png)
+![](sugar_rush_halloween.png)
 
 <details>
 
