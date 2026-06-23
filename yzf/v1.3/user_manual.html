@@ -1,0 +1,907 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>YZF Sudoku 使用手册 / User Manual</title>
+  <style>
+    :root {
+      --bg: #f6f7fb;
+      --paper: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --line: #d9dee8;
+      --brand: #2563eb;
+      --brand-soft: #eaf1ff;
+      --warn: #b45309;
+      --warn-soft: #fff7ed;
+      --ok: #047857;
+      --ok-soft: #ecfdf5;
+      --code: #111827;
+      --code-bg: #f3f4f6;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.72;
+    }
+    header {
+      background: linear-gradient(135deg, #1d4ed8, #7c3aed);
+      color: #fff;
+      padding: 36px 22px 30px;
+    }
+    header .wrap, main { max-width: 1180px; margin: 0 auto; }
+    h1 { margin: 0 0 10px; font-size: clamp(28px, 4vw, 46px); line-height: 1.15; }
+    header p { margin: 4px 0; color: rgba(255,255,255,.88); }
+    .meta { margin-top: 14px; font-size: 14px; color: rgba(255,255,255,.78); }
+    main { padding: 24px 16px 60px; }
+    nav {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 18px;
+      margin-bottom: 22px;
+      box-shadow: 0 8px 26px rgba(15,23,42,.06);
+    }
+    nav h2 { margin-top: 0; font-size: 20px; }
+    .toc { columns: 2; column-gap: 40px; padding-left: 22px; }
+    .toc a { color: var(--brand); text-decoration: none; }
+    .toc a:hover { text-decoration: underline; }
+    section {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 22px;
+      margin: 18px 0;
+      box-shadow: 0 8px 26px rgba(15,23,42,.05);
+    }
+    h2 { font-size: 26px; margin: 0 0 14px; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
+    h3 { font-size: 19px; margin: 22px 0 8px; }
+    .pair {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin: 14px 0;
+    }
+    .zh, .en {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px 16px;
+      background: #fff;
+    }
+    .zh::before, .en::before {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 700;
+      border-radius: 999px;
+      padding: 2px 9px;
+      margin-bottom: 8px;
+    }
+    .zh::before { content: "中文"; color: #1d4ed8; background: var(--brand-soft); }
+    .en::before { content: "English"; color: #047857; background: var(--ok-soft); }
+    ul, ol { padding-left: 22px; }
+    li { margin: 5px 0; }
+    code, pre {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      background: var(--code-bg);
+      color: var(--code);
+      border-radius: 6px;
+    }
+    code { padding: 2px 5px; }
+    pre { padding: 12px; overflow: auto; border: 1px solid var(--line); }
+    .note, .warn, .ok {
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin: 12px 0;
+      border: 1px solid;
+    }
+    .note { background: var(--brand-soft); border-color: #bfdbfe; }
+    .warn { background: var(--warn-soft); border-color: #fed7aa; color: #7c2d12; }
+    .ok { background: var(--ok-soft); border-color: #bbf7d0; color: #064e3b; }
+    table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
+    th, td { border: 1px solid var(--line); padding: 9px 10px; vertical-align: top; }
+    th { background: #f8fafc; text-align: left; }
+    .kbd {
+      display: inline-block;
+      min-width: 1.8em;
+      padding: 1px 6px;
+      border-radius: 6px;
+      border: 1px solid #cbd5e1;
+      background: #fff;
+      box-shadow: inset 0 -1px 0 #cbd5e1;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.9em;
+      text-align: center;
+    }
+    .small { color: var(--muted); font-size: 13px; }
+    .manual-language-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      max-width: 1180px;
+      margin: 14px auto 0;
+      padding: 0 16px;
+    }
+    .manual-language-toolbar button {
+      border: 1px solid rgba(255,255,255,.62);
+      border-radius: 999px;
+      padding: 6px 12px;
+      color: #fff;
+      background: rgba(255,255,255,.12);
+      cursor: pointer;
+    }
+    .manual-language-toolbar button[aria-pressed="true"] {
+      color: #1d4ed8;
+      background: #fff;
+    }
+    body[data-manual-lang="zh"] .pair > .en,
+    body[data-manual-lang="en"] .pair > .zh { display: none; }
+    body[data-manual-lang="zh"] .pair,
+    body[data-manual-lang="en"] .pair { grid-template-columns: 1fr; }
+
+    .tlg-visual-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin: 14px 0;
+    }
+    .tlg-visual-card {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-height: 92px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #f8fafc;
+    }
+    .tlg-demo-candidate {
+      position: relative;
+      width: 58px;
+      height: 58px;
+      flex: 0 0 58px;
+      display: grid;
+      place-items: center;
+      font-size: 24px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+    .tlg-demo-candidate .link-fill,
+    .tlg-demo-candidate .truth-ring {
+      position: absolute;
+      border-radius: 999px;
+      pointer-events: none;
+    }
+    .tlg-demo-candidate .link-fill {
+      inset: 11px;
+      background: conic-gradient(from 90deg, rgba(15,157,139,.48) 0 50%, rgba(139,92,246,.48) 50% 100%);
+    }
+    .tlg-demo-candidate .truth-ring {
+      inset: 2px;
+      background: conic-gradient(from 90deg, #0f9d8b 0 33.333%, #d4a017 33.333% 66.666%, #8b5cf6 66.666% 100%);
+      -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 6px), #000 0);
+      mask: radial-gradient(farthest-side, transparent calc(100% - 6px), #000 0);
+    }
+    .tlg-demo-candidate strong { position: relative; z-index: 2; }
+    .tlg-demo-cell {
+      position: relative;
+      width: 72px;
+      height: 72px;
+      flex: 0 0 72px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      place-items: center;
+      border: 1px solid #94a3b8;
+      background: rgba(14,165,233,.14);
+      color: #475569;
+      font-size: 13px;
+    }
+    .tlg-demo-cell::after {
+      content: "";
+      position: absolute;
+      inset: 4px;
+      border: 3px solid rgba(20,102,204,.68);
+      border-radius: 3px;
+    }
+    .tlg-swatch { display: inline-flex; align-items: center; gap: 6px; margin-right: 12px; white-space: nowrap; }
+    .tlg-swatch::before { content: ""; width: 13px; height: 13px; border-radius: 999px; background: var(--swatch); }
+    footer { max-width: 1180px; margin: 0 auto 40px; padding: 0 16px; color: var(--muted); }
+    @media (max-width: 820px) {
+      .pair { grid-template-columns: 1fr; }
+      .toc { columns: 1; }
+      section { padding: 17px; }
+    }
+    @media print {
+      body { background: #fff; }
+      header { color: #000; background: #fff; border-bottom: 2px solid #000; }
+      section, nav { box-shadow: none; break-inside: avoid; }
+      a { color: #000; text-decoration: none; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>YZF Sudoku 使用手册 / User Manual</h1>
+      <p>适用于 YZF Sudoku Web / WASM / Standalone 版本</p>
+      <p>For YZF Sudoku Web, WASM, and Standalone builds</p>
+      <div class="meta">Version: Manual v1.3 · Updated: 2026-06-22</div>
+    </div>
+    <div class="manual-language-toolbar" role="group" aria-label="Manual language view / 手册语言视图">
+      <button type="button" data-manual-lang-button="bilingual" aria-pressed="true">双语 / Bilingual</button>
+      <button type="button" data-manual-lang-button="zh" aria-pressed="false">中文</button>
+      <button type="button" data-manual-lang-button="en" aria-pressed="false">English</button>
+    </div>
+  </header>
+
+  <main>
+    <nav aria-label="Table of contents">
+      <h2>目录 / Contents</h2>
+      <ol class="toc">
+        <li><a href="#overview">项目简介 / Overview</a></li>
+        <li><a href="#start">启动方式 / How to Start</a></li>
+        <li><a href="#layout">界面区域 / Interface Layout</a></li>
+        <li><a href="#input">题面输入 / Puzzle Input</a></li>
+        <li><a href="#image-ocr">图片识别 / Image Recognition</a></li>
+        <li><a href="#edit-board">盘面编辑 / Board Editing</a></li>
+        <li><a href="#solve">自动解题 / Auto Solve</a></li>
+        <li><a href="#all-steps">所有步骤 / All Steps</a></li>
+        <li><a href="#techniques">技巧与高亮 / Techniques and Highlights</a></li>
+        <li><a href="#tlg-solver">TLG Solver / Truth-Link Logic</a></li>
+        <li><a href="#superhard">内置超难题库 / Built-in Superhard Bank</a></li>
+        <li><a href="#export">导出与分享 / Export and Sharing</a></li>
+        <li><a href="#mobile">手机端使用 / Mobile Use</a></li>
+        <li><a href="#standalone">Standalone 版本 / Standalone Version</a></li>
+        <li><a href="#troubleshooting">常见问题 / Troubleshooting</a></li>
+        <li><a href="#credits">模型与来源声明 / Credits</a></li>
+      </ol>
+    </nav>
+
+    <section id="overview">
+      <h2>1. 项目简介 / Overview</h2>
+      <div class="pair">
+        <div class="zh">
+          <p>YZF Sudoku 是一个面向高级数独技巧分析的 Web/WASM 工具。它支持题串导入、Coach 格式导入、图片本地识别、自动解题、所有步骤搜索、候选数编辑、技巧路径展示和高亮。</p>
+          <p>项目重点不是只给出答案，而是展示每一步逻辑推理过程，尤其适合研究 AIC、ALS、UR、Oddagon、Force Chain 等高级技巧。</p>
+        </div>
+        <div class="en">
+          <p>YZF Sudoku is a Web/WASM Sudoku tool focused on advanced solving logic. It supports puzzle-string import, Sudoku Coach formats, local image OCR, auto solving, all-step search, candidate editing, explanation paths, and highlighting.</p>
+          <p>The goal is not only to produce the final answer, but to show the logical path behind each step, especially for advanced techniques such as AIC, ALS, UR, Oddagon, and Force Chain.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="start">
+      <h2>2. 启动方式 / How to Start</h2>
+      <div class="pair">
+        <div class="zh">
+          <h3>普通 Web 版</h3>
+          <p>普通版通常通过本地或在线 HTTP 服务打开，例如开发时可以使用：</p>
+          <pre>cd web-app
+python -m http.server 8000</pre>
+          <p>然后访问 <code>http://127.0.0.1:8000/index.html</code>。</p>
+          <h3>Standalone 版</h3>
+          <p>Standalone 版设计目标是双击 HTML 文件即可使用，不需要本地服务器。图片识别所需模型和运行时应已被内联进单文件 HTML。</p>
+        </div>
+        <div class="en">
+          <h3>Regular Web Build</h3>
+          <p>The regular build is usually opened through a local or hosted HTTP server. For development:</p>
+          <pre>cd web-app
+python -m http.server 8000</pre>
+          <p>Then open <code>http://127.0.0.1:8000/index.html</code>.</p>
+          <h3>Standalone Build</h3>
+          <p>The standalone build is intended to work by double-clicking the HTML file without starting a server. OCR models and runtime files should be bundled into the single HTML file.</p>
+        </div>
+      </div>
+      <div class="warn">Standalone 版不应依赖 <code>localhost</code>。如果图片识别提示缺少 <code>.ort</code>、<code>.wasm</code> 或 <code>ort.min.js</code>，说明打包流程没有正确内联 OCR 资源。</div>
+    </section>
+
+    <section id="layout">
+      <h2>3. 界面区域 / Interface Layout</h2>
+      <div class="pair">
+        <div class="zh">
+          <ul>
+            <li><strong>盘面区：</strong>显示 9×9 棋盘、已知数、出数和候选数。</li>
+            <li><strong>输入面板：</strong>用于输入题串、导入 Coach/Library 格式、图片识别。</li>
+            <li><strong>技巧面板：</strong>选择技巧、搜索下一步、搜索所有步骤。</li>
+            <li><strong>结果面板：</strong>显示删数、路径、解释、评分和状态信息。</li>
+            <li><strong>导出区域：</strong>导出当前盘面、候选数和可分享题串。</li>
+          </ul>
+        </div>
+        <div class="en">
+          <ul>
+            <li><strong>Board:</strong> shows the 9×9 grid, givens, solved digits, and candidates.</li>
+            <li><strong>Input panel:</strong> accepts puzzle strings, Coach/Library formats, and image OCR.</li>
+            <li><strong>Technique panel:</strong> selects techniques, finds the next step, or searches all steps.</li>
+            <li><strong>Result panel:</strong> displays eliminations, paths, explanations, ratings, and status messages.</li>
+            <li><strong>Export area:</strong> exports the current board, candidates, and shareable strings.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="input">
+      <h2>4. 题面输入 / Puzzle Input</h2>
+      <div class="pair">
+        <div class="zh">
+          <p>项目支持多种导入格式：</p>
+          <ul>
+            <li><strong>81 字符题串：</strong>使用数字 <code>1-9</code> 表示提示数，<code>0</code> 或 <code>.</code> 表示空格。</li>
+            <li><strong>Library 冒号格式：</strong>例如 <code>:0000:x:&lt;board&gt;:&lt;eliminations&gt;::</code>，可保存候选删除信息。</li>
+            <li><strong>Sudoku Coach JSON：</strong>包含 <code>givenDigits</code>、<code>userDigits</code>、<code>userCellCandidates</code> 等字段。</li>
+            <li><strong>SCv7_32 Coach 压缩串：</strong>前端会先解压成 Coach JSON，再导入。</li>
+          </ul>
+          <p>普通导入会进行合法性和唯一解校验；图片识别导入则允许先作为草稿落盘，方便手动校正。</p>
+        </div>
+        <div class="en">
+          <p>The project supports several import formats:</p>
+          <ul>
+            <li><strong>81-character string:</strong> digits <code>1-9</code> are givens, while <code>0</code> or <code>.</code> means empty.</li>
+            <li><strong>Library colon format:</strong> for example <code>:0000:x:&lt;board&gt;:&lt;eliminations&gt;::</code>, preserving candidate eliminations.</li>
+            <li><strong>Sudoku Coach JSON:</strong> includes fields such as <code>givenDigits</code>, <code>userDigits</code>, and <code>userCellCandidates</code>.</li>
+            <li><strong>SCv7_32 Coach compressed string:</strong> decompressed by the frontend into Coach JSON before import.</li>
+          </ul>
+          <p>Regular imports are checked for validity and uniqueness. OCR imports are allowed to land as editable drafts so the user can correct recognition mistakes.</p>
+        </div>
+      </div>
+      <h3>Coach 候选数 mask / Coach Candidate Masks</h3>
+      <div class="pair">
+        <div class="zh">
+          <p><code>userCellCandidates</code> 是 81 个 mask，用 <code>-</code> 分隔。数字 <code>d</code> 对应 <code>1 &lt;&lt; d</code>。例如候选 <code>2,3,6</code> 的 mask 是 <code>4 + 8 + 64 = 76</code>。</p>
+        </div>
+        <div class="en">
+          <p><code>userCellCandidates</code> contains 81 masks separated by <code>-</code>. Digit <code>d</code> corresponds to <code>1 &lt;&lt; d</code>. For candidates <code>2,3,6</code>, the mask is <code>4 + 8 + 64 = 76</code>.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="image-ocr">
+      <h2>5. 图片识别 / Image Recognition</h2>
+      <div class="pair">
+        <div class="zh">
+          <p>图片识别在浏览器本地运行，不上传图片，不使用在线 fallback。识别完成后会直接导入为可编辑草稿盘面。</p>
+          <p>入口一般位于“题面输入 / 导出评分”面板：</p>
+          <ul>
+            <li><strong>选择图片识别：</strong>从本地文件或相册选择图片。</li>
+            <li><strong>拍照识别：</strong>手机端调用相机拍摄图片。</li>
+            <li><strong>从剪贴板识别：</strong>桌面端读取剪贴板截图。</li>
+            <li><strong>Ctrl+V：</strong>桌面端也可以直接粘贴截图。</li>
+          </ul>
+        </div>
+        <div class="en">
+          <p>Image recognition runs locally in the browser. Images are not uploaded and no online fallback is used. The recognized result is imported directly as an editable draft board.</p>
+          <p>The buttons are normally placed in the “Puzzle Input / Export & Rating” panel:</p>
+          <ul>
+            <li><strong>Select Image:</strong> choose an image from files or photo library.</li>
+            <li><strong>Take Photo:</strong> open the camera on mobile devices.</li>
+            <li><strong>Read Clipboard:</strong> read a screenshot from the desktop clipboard.</li>
+            <li><strong>Ctrl+V:</strong> desktop users can paste screenshots directly.</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3>识别结果如何解释 / How OCR Results Are Interpreted</h3>
+      <div class="pair">
+        <div class="zh">
+          <ul>
+            <li><strong>黑色大数字：</strong>导入为提示数 <code>givenDigits</code>。</li>
+            <li><strong>蓝色或其它颜色大数字：</strong>导入为出数 <code>userDigits</code>。</li>
+            <li><strong>小候选数：</strong>导入为 <code>userCellCandidates</code>。</li>
+            <li><strong>非唯一解：</strong>不会拒绝导入，而是作为草稿显示，方便校正。</li>
+          </ul>
+          <p>OCR 导入后会用黑色提示数组成的题串做唯一解校验。如果校验失败，仍然允许用户在盘面上继续修正。</p>
+        </div>
+        <div class="en">
+          <ul>
+            <li><strong>Black large digits:</strong> imported as givens, <code>givenDigits</code>.</li>
+            <li><strong>Blue or other colored large digits:</strong> imported as solved/user digits, <code>userDigits</code>.</li>
+            <li><strong>Pencil marks:</strong> imported as <code>userCellCandidates</code>.</li>
+            <li><strong>Non-unique result:</strong> not rejected; it is shown as a draft so the user can correct it.</li>
+          </ul>
+          <p>After OCR import, the black givens are checked for uniqueness. If the check fails, the draft still remains editable on the board.</p>
+        </div>
+      </div>
+
+      <div class="note">
+        图片识别模型使用 Alex Kubiesa / Sudoku OCR 训练的本地模型。项目不使用 sudoku-ocr.com 的在线 fallback。<br />
+        The OCR feature uses a local model trained by Alex Kubiesa / Sudoku OCR. This project does not use the sudoku-ocr.com online fallback.
+      </div>
+    </section>
+
+    <section id="edit-board">
+      <h2>6. 盘面编辑 / Board Editing</h2>
+      <div class="pair">
+        <div class="zh">
+          <p>点击格子后，可以输入数字或候选数。OCR 草稿状态下，修改会直接作用在前端草稿盘面，不会因为当前题面尚未唯一解而被 engine 拒绝。</p>
+          <ul>
+            <li>输入大数字：设置该格出数。</li>
+            <li>切换候选：在空格中添加或移除候选数。</li>
+            <li>撤销/重做：回退或恢复最近的盘面操作。</li>
+            <li>校正完成后，可重新导入或开始搜索技巧。</li>
+          </ul>
+        </div>
+        <div class="en">
+          <p>After selecting a cell, you can enter a digit or toggle candidates. In OCR draft mode, edits are applied directly to the frontend draft board, so the engine will not reject the board simply because the givens are not yet unique.</p>
+          <ul>
+            <li>Enter a large digit: set the solved/user digit for the cell.</li>
+            <li>Toggle candidates: add or remove pencil marks in an empty cell.</li>
+            <li>Undo/Redo: revert or restore recent board operations.</li>
+            <li>After correction, you may re-import or start technique search.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="solve">
+      <h2>7. 自动解题 / Auto Solve</h2>
+      <div class="pair">
+        <div class="zh">
+          <p>自动解题会从当前盘面开始，按启用技巧和优先级逐步搜索可用步骤，直到解完或找不到下一步。</p>
+          <ul>
+            <li><strong>自动解题：</strong>连续应用找到的逻辑步骤。</li>
+            <li><strong>后台解题：</strong>耗时较长的搜索可能显示后台状态提示。</li>
+            <li><strong>状态信息：</strong>会显示 solved、NoResult、Invalid 等结果。</li>
+          </ul>
+          <p>如果自动解题找不到某个高级技巧，请确认该技巧在技巧面板中已启用，并且当前 wasm/standalone 是重新编译或重新生成后的版本。</p>
+        </div>
+        <div class="en">
+          <p>Auto Solve starts from the current board and searches for logical steps according to the enabled techniques and priority order, until the puzzle is solved or no next step is found.</p>
+          <ul>
+            <li><strong>Auto Solve:</strong> repeatedly applies available logical steps.</li>
+            <li><strong>Background solving:</strong> long searches may display background status messages.</li>
+            <li><strong>Status messages:</strong> show results such as solved, NoResult, or Invalid.</li>
+          </ul>
+          <p>If an advanced technique is not found, make sure it is enabled in the technique panel and that the current wasm/standalone file has been rebuilt or regenerated.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="all-steps">
+      <h2>8. 所有步骤 / All Steps</h2>
+      <div class="pair">
+        <div class="zh">
+          <p>“所有步骤”会在当前盘面上收集多个可用步骤，便于比较不同技巧、不同删数和不同路径。</p>
+          <ul>
+            <li>可按技巧类型过滤。</li>
+            <li>可查看删数、路径、解释和高亮。</li>
+            <li>对复杂链和 Force Chain，搜索时间可能明显增加。</li>
+          </ul>
+        </div>
+        <div class="en">
+          <p>“All Steps” collects multiple available steps from the current board, making it easier to compare different techniques, eliminations, and paths.</p>
+          <ul>
+            <li>Filter by technique type.</li>
+            <li>Inspect eliminations, paths, explanations, and highlights.</li>
+            <li>Complex chains and Force Chains may require noticeably more time.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="techniques">
+      <h2>9. 技巧与高亮 / Techniques and Highlights</h2>
+      <div class="pair">
+        <div class="zh">
+          <p>项目支持从基础到高级的一系列技巧。高级链类技巧会显示路径、强弱关系、共同删数和特殊构型。</p>
+          <p>近期重点支持的高级内容包括：</p>
+          <ul>
+            <li>AIC / X-Chain / XY-Chain</li>
+            <li>ALS / AHS / XZ 类技巧</li>
+            <li>UR Guardian Force Chain</li>
+            <li>Triplet Oddagon / Tridagon Guardian Force Chain</li>
+            <li>MSLS、JE、Dynamic Chain 等高级迁移技巧</li>
+          </ul>
+          <p>高亮通常包含：链路径、起点、终点、删数、结构格、guardian 候选等。</p>
+          <p><strong>完整技巧说明：</strong>请打开 <a href="techniques.html">techniques.html</a>。该页面按玩家阅读方式整理当前已实现技巧的逻辑含义、成立理由和高亮阅读方式。</p>
+        </div>
+        <div class="en">
+          <p>The project supports a wide range of techniques from basic to advanced. Advanced chain techniques display paths, strong/weak links, common eliminations, and special patterns.</p>
+          <p><strong>Full technique guide:</strong> open <a href="techniques.html">techniques.html</a> for player-facing explanations of implemented techniques, conclusions, and highlight reading tips.</p>
+          <p>Recently supported advanced areas include:</p>
+          <ul>
+            <li>AIC / X-Chain / XY-Chain</li>
+            <li>ALS / AHS / XZ-style techniques</li>
+            <li>UR Guardian Force Chain</li>
+            <li>Triplet Oddagon / Tridagon Guardian Force Chain</li>
+            <li>MSLS, JE, Dynamic Chain, and other migrated advanced techniques</li>
+          </ul>
+          <p>Highlights usually include chain paths, starts, ends, eliminations, structure cells, and guardian candidates.</p>
+        </div>
+      </div>
+
+      <h3>Guardian Force Chain 说明 / Guardian Force Chain</h3>
+      <div class="pair">
+        <div class="zh">
+          <p>Guardian Force Chain 的通用逻辑是：某个 dead pattern 的所有 guardian 不可能同时为假，因此至少一个 guardian 为真。如果每个 guardian 为真都推出同一个删数，则该删数成立。</p>
+          <p>UR Guardian FC 和 Triplet Oddagon Guardian FC 的搜索逻辑相同，区别只在 dead pattern 构型不同。</p>
+        </div>
+        <div class="en">
+          <p>The general logic of Guardian Force Chain is: not all guardians of a dead pattern can be false, so at least one guardian must be true. If every true guardian leads to the same elimination, that elimination is valid.</p>
+          <p>UR Guardian FC and Triplet Oddagon Guardian FC share the same search logic; only the dead-pattern structure differs.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="tlg-solver">
+      <h2>10. TLG Solver / Truth-Link Logic</h2>
+      <div class="pair">
+        <div class="zh">
+          <p>TLG Solver 用 Truths、Links、Virtual Set、定式 AUR 和 DAUR/DUR 描述集合逻辑，并搜索这些约束共同推出的删数或出数。只有勾选<strong>启用 TLG 编辑</strong>后，TLG 才会接管盘面点击和专属高亮。</p>
+          <p>TLG 编辑期间，普通技巧高亮、链路和手工标记只会暂时隐藏；关闭 TLG 编辑后会恢复，原数据不会被删除。</p>
+        </div>
+        <div class="en">
+          <p>TLG Solver describes a set-logic proof with Truths, Links, a Virtual Set, fixed AURs, and DAUR/DUR constraints, then searches for eliminations or assignments implied by the combined structure. It takes over board input only while <strong>Enable TLG editing</strong> is checked.</p>
+          <p>Ordinary technique highlights, chain overlays, and manual marks are only hidden while TLG editing is active. They return when TLG editing is disabled; their data is not deleted.</p>
+        </div>
+      </div>
+
+      <h3>核心对象 / Core Objects</h3>
+      <div class="pair">
+        <div class="zh">
+          <ul>
+            <li><strong>Truth：</strong>投影中必须恰好覆盖一次的集合，可使用行、列、宫或单元格描述符。</li>
+            <li><strong>Link：</strong>投影中最多覆盖一次的集合，也用于判断集合外候选是否可删。</li>
+            <li><strong>Virtual Set：</strong>由用户直接给出的虚拟约束集合。</li>
+            <li><strong>定式 AUR：</strong>明确指定的四格位置与本体数对 <code>{a,b}</code>。它禁止四格全部由本体数占据，即 <code>maxBodyFootprint ≤ 3</code>。</li>
+            <li><strong>DAUR：</strong>用户只标记潜在本体候选池；程序从中动态发现四格 AUR，以及六格 2×3 / 3×2 DUR。所有展开出的约束地位相同，最终必须全部满足。</li>
+            <li><strong>六格 DUR：</strong>六格位置与一个三数组的可交换完成对。它禁止六格全部落入该 deadly completion，即 <code>maxBodyFootprint ≤ 5</code>。</li>
+          </ul>
+          <div class="note">直接使用 <code>maxBodyFootprint</code> 与构造一个“至少一个 guardian 为真”的 1-Truth guardian 集合等价，但不需要先识别 inside/outside guardians。</div>
+        </div>
+        <div class="en">
+          <ul>
+            <li><strong>Truth:</strong> a set that must be covered exactly once by a projection. Row, column, box, and cell descriptors are supported.</li>
+            <li><strong>Link:</strong> a set covered at most once by a projection; it also participates in external-candidate elimination tests.</li>
+            <li><strong>Virtual Set:</strong> a user-supplied virtual constraint set.</li>
+            <li><strong>Fixed AUR:</strong> an explicit four-cell position plus a body pair <code>{a,b}</code>. It forbids all four cells from being occupied by body digits, represented as <code>maxBodyFootprint ≤ 3</code>.</li>
+            <li><strong>DAUR:</strong> the user marks only a pool of potential body candidates. The program dynamically discovers fixed four-cell AURs and six-cell 2×3 / 3×2 DURs. Every expanded constraint has equal status and all of them must be satisfied.</li>
+            <li><strong>Six-cell DUR:</strong> a six-cell position and a swappable completion pair for a three-digit set. It forbids all six cells from occupying that deadly completion, represented as <code>maxBodyFootprint ≤ 5</code>.</li>
+          </ul>
+          <div class="note">A direct <code>maxBodyFootprint</code> constraint is equivalent to a one-Truth guardian set saying that at least one guardian must be true, without first classifying inside and outside guardians.</div>
+        </div>
+      </div>
+
+      <h3>初始候选与唯一性门控 / Initial Candidates and the Uniqueness Gate</h3>
+      <div class="pair">
+        <div class="zh">
+          <p>TLG 会分开保存<strong>初始候选盘</strong>与<strong>当前候选盘</strong>。Sukaku 只是输入格式，并不自动等同于多解训练盘。</p>
+          <ul>
+            <li><strong>唯一解：核验初始可交换局面（默认）</strong><br />定式四格 AUR 的初始候选必须同时支持 <code>abba</code> 与 <code>baab</code> 两个可交换完成；当前候选至少保留其中一个。六格 DUR 的初始候选必须支持一对可交换 Latin completion，当前候选至少保留这对中的一个。</li>
+            <li><strong>训练盘：允许初始缺数</strong><br />仅用于人为构造的多解/Rank 训练候选盘。此模式不核验原始唯一性前提，只要求当前候选仍存在至少一个 deadly completion。</li>
+          </ul>
+          <div class="warn">普通数独和唯一解 Sukaku 应保持默认严格模式。只有明确用于训练的多解候选盘才应选择“训练盘”。错误放宽可能把不具备交换前提的结构当成 AUR/DUR，产生伪删数。</div>
+        </div>
+        <div class="en">
+          <p>TLG stores the <strong>initial candidate grid</strong> separately from the <strong>current candidate grid</strong>. Sukaku is only an input format and is not automatically treated as a multi-solution training grid.</p>
+          <ul>
+            <li><strong>Unique puzzle: verify initial swap pair (default)</strong><br />For a fixed four-cell AUR, the initial grid must support both swappable <code>abba</code> and <code>baab</code> completions; the current grid must retain at least one. For a six-cell DUR, the initial grid must support a pair of swappable Latin completions, and the current grid must retain at least one member of that pair.</li>
+            <li><strong>Training grid: allow missing initial candidates</strong><br />This mode is only for deliberately constructed multi-solution or Rank-training candidate grids. It skips the original uniqueness premise and requires only a current deadly completion.</li>
+          </ul>
+          <div class="warn">Keep the default strict mode for ordinary puzzles and unique-solution Sukaku. Select Training mode only for an explicitly constructed training grid. An inappropriate relaxation can accept an AUR/DUR without a valid swap premise and produce false eliminations.</div>
+        </div>
+      </div>
+
+      <h3>输入流程 / Input Workflow</h3>
+      <div class="pair">
+        <div class="zh">
+          <ol>
+            <li>在“操作”页签底部展开 <strong>TLG Solver</strong>，勾选“启用 TLG 编辑”。</li>
+            <li>需要使用候选盘时，把 729 字符 Sukaku 或 81 个候选单元格粘贴到题面输入框，选择正确的“唯一性门控”，再点击“导入 TLG 候选盘面”。导入时的候选会固定保存为初始候选，之后的编辑只改变当前候选。</li>
+            <li><strong>Truths：</strong>点击两个共享同一行、列或宫且数字相同的候选，加入对应 House Truth；点击空单元格背景可切换 Cell Truth。</li>
+            <li><strong>Links：</strong>选择自动、行/列、宫或单元格类型，再依次点击两个候选。自动模式下，同一单元格内的两个候选优先解释为 Cell Link。</li>
+            <li><strong>批量选择：</strong>按住 <span class="kbd">Ctrl</span>（macOS 使用 <span class="kbd">Command</span>）点击候选，再右键打开菜单。可批量添加/移除 Truth 或 Link 的行、列、单元格、宫描述符，也可切换 Virtual Set、AUR 角候选和 DAUR 候选池。</li>
+            <li><strong>定式 AUR：</strong>选择 AUR 1 或 AUR 2，标记该组四角的实际本体候选。严格模式下，门控会回看初始候选盘验证交换前提。</li>
+            <li><strong>DAUR：</strong>标记潜在本体候选池。程序会动态枚举“4 格位置 + 数对”的定式 AUR，以及“6 格位置 + 三数组交换对”的六格 DUR。</li>
+            <li>点击“查找删数”。结果区列出 Truths/Links、定式 AUR、DAUR 展开数量、删数和出数；盘面以红叉显示删数。</li>
+            <li>得到有效结果后，可使用“转换冗余 Truths”和“移除未使用 Links”整理结构。转换失败时会保留上一轮有效删数和结果。</li>
+          </ol>
+          <div class="note">“查找删数”“转换冗余 Truths”和“移除未使用 Links”会在后台 Worker 中运行。右键菜单“清空全部逻辑”保留临时候选盘；面板按钮“清空 TLG 状态”会同时清除临时候选盘。</div>
+        </div>
+        <div class="en">
+          <ol>
+            <li>Open <strong>TLG Solver</strong> at the bottom of the Controls tab and check “Enable TLG editing”.</li>
+            <li>To use a candidate grid, paste a 729-character Sukaku or 81 candidate-cell tokens into the puzzle input, select the correct Uniqueness Gate, and press “Import TLG Candidate Grid”. The imported candidates are preserved as the initial grid; later edits change only the current grid.</li>
+            <li><strong>Truths:</strong> click two same-digit candidates sharing a row, column, or box to add the corresponding House Truth. Click an empty cell background to toggle a Cell Truth.</li>
+            <li><strong>Links:</strong> choose Auto, Row/Column, Box, or Cell, then click two candidates. In Auto mode, two candidates in the same cell are interpreted as a Cell Link first.</li>
+            <li><strong>Batch selection:</strong> hold <span class="kbd">Ctrl</span> (<span class="kbd">Command</span> on macOS), select candidates, then right-click. The menu can batch add/remove Row, Column, Cell, or Box Truth/Link descriptors and toggle the Virtual Set, AUR corners, or the DAUR candidate pool.</li>
+            <li><strong>Fixed AUR:</strong> select AUR 1 or AUR 2 and mark the actual body candidates at its four corners. In strict mode, the gate checks the initial candidate grid for the swap premise.</li>
+            <li><strong>DAUR:</strong> mark a pool of potential body candidates. The program dynamically enumerates fixed AURs as “four-cell position + digit pair” and six-cell DURs as “six-cell position + swappable three-digit completion pair”.</li>
+            <li>Press “Find Eliminations”. The result lists Truths/Links, fixed AURs, the number of DAUR-expanded constraints, eliminations, and assignments. Eliminations receive a red cross on the board.</li>
+            <li>After a valid result, use “Convert Redundant Truths” and “Remove Unused Links” to simplify the structure. A failed conversion preserves the previous valid eliminations and result.</li>
+          </ol>
+          <div class="note">Find Eliminations, Convert Redundant Truths, and Remove Unused Links run in a background Worker. “Clear All Logic” in the context menu preserves the temporary candidate grid; “Clear TLG State” also removes that grid.</div>
+        </div>
+      </div>
+
+      <h3>右键菜单 / Candidate Context Menu</h3>
+      <div class="pair">
+        <div class="zh">
+          <p>启用 TLG 编辑后，候选右键菜单只保留以下逻辑操作：</p>
+          <ul>
+            <li>添加/移除 Truth → 行、列、单元格、宫</li>
+            <li>添加/移除 Link → 行、列、单元格、宫</li>
+            <li>切换到 Virtual Set</li>
+            <li>切换 AUR 角候选</li>
+            <li>切换 DAUR 候选池</li>
+            <li>清空全部逻辑</li>
+          </ul>
+          <p>执行上述批量动作后，候选选择标记会自动清除。</p>
+        </div>
+        <div class="en">
+          <p>While TLG editing is enabled, the candidate context menu contains only these proof operations:</p>
+          <ul>
+            <li>Add/Remove Truth → Row, Column, Cell, Box</li>
+            <li>Add/Remove Link → Row, Column, Cell, Box</li>
+            <li>Toggle in Virtual Set</li>
+            <li>Toggle AUR Corner</li>
+            <li>Toggle DAUR Candidate Pool</li>
+            <li>Clear All Logic</li>
+          </ul>
+          <p>The multi-candidate selection mark is cleared automatically after any of these batch actions.</p>
+        </div>
+      </div>
+
+      <h3>高亮图例 / Highlight Legend</h3>
+      <div class="pair">
+        <div class="zh">
+          <p>House 集合使用固定颜色并按 <strong>R → C → B</strong> 排列：</p>
+          <p><span class="tlg-swatch" style="--swatch:#0f9d8b">R：青绿</span><span class="tlg-swatch" style="--swatch:#d4a017">C：金黄</span><span class="tlg-swatch" style="--swatch:#8b5cf6">B：紫色</span></p>
+          <ul>
+            <li><strong>House Truth：</strong>候选外围的分色圆环。</li>
+            <li><strong>House Link：</strong>候选数字后的分色底色；只有该候选同时被某个 Truth 覆盖或属于最终删数时才显示。</li>
+            <li><strong>Cell Truth：</strong>单元格内缩蓝色边框。</li>
+            <li><strong>Cell Link：</strong>只要存在 Cell Link，就给整个单元格浅蓝底色；它不受候选相关性门槛限制。</li>
+            <li><strong>Virtual Set：</strong>紫色实线圆形标记。</li>
+            <li><strong>AUR：</strong>AUR 1 为橙色虚线圈，AUR 2 为蓝色虚线圈。</li>
+            <li><strong>DAUR：</strong>青色点线圈，表示潜在本体候选池；实际展开的 AUR/DUR 数量显示在状态栏和结果区。</li>
+            <li><strong>Elimination：</strong>红色候选和红色交叉线，始终显示在最上层。</li>
+          </ul>
+        </div>
+        <div class="en">
+          <p>House sets use fixed colors in the order <strong>R → C → B</strong>:</p>
+          <p><span class="tlg-swatch" style="--swatch:#0f9d8b">R: teal</span><span class="tlg-swatch" style="--swatch:#d4a017">C: amber</span><span class="tlg-swatch" style="--swatch:#8b5cf6">B: violet</span></p>
+          <ul>
+            <li><strong>House Truth:</strong> a segmented ring around the candidate.</li>
+            <li><strong>House Link:</strong> a segmented background behind the digit, shown only when the candidate is also covered by a Truth or is a final elimination.</li>
+            <li><strong>Cell Truth:</strong> an inset blue border inside the cell.</li>
+            <li><strong>Cell Link:</strong> the whole cell receives a light-blue fill whenever a Cell Link exists; it is not gated by candidate relevance.</li>
+            <li><strong>Virtual Set:</strong> a solid violet circular mark.</li>
+            <li><strong>AUR:</strong> AUR 1 uses an orange dashed ring; AUR 2 uses a blue dashed ring.</li>
+            <li><strong>DAUR:</strong> a cyan dotted ring marking the potential body-candidate pool. The number of expanded AUR/DUR constraints is shown in the status and result panels.</li>
+            <li><strong>Elimination:</strong> a red candidate with a red cross, always drawn on top.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="tlg-visual-grid" aria-label="TLG highlight examples">
+        <div class="tlg-visual-card">
+          <div class="tlg-demo-candidate"><span class="link-fill"></span><span class="truth-ring"></span><strong>4</strong></div>
+          <div><strong>House Truth + House Link</strong><br><span class="small">外圈表示 Truth；数字底色表示相关 Link。<br>Outer ring = Truth; digit background = relevant Link.</span></div>
+        </div>
+        <div class="tlg-visual-card">
+          <div class="tlg-demo-cell"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span></div>
+          <div><strong>Cell Truth + Cell Link</strong><br><span class="small">内边框表示 Cell Truth；整格底色表示 Cell Link。<br>Inset border = Cell Truth; the cell fill represents a Cell Link.</span></div>
+        </div>
+      </div>
+
+      <h3>结果阅读与预算状态 / Reading Results and Budget Status</h3>
+      <div class="pair">
+        <div class="zh">
+          <p>结果区采用紧凑集合表示法，例如：</p>
+          <pre>28 Truths = {...}
+50 Links = {...}
+1 个定式 AUR = ...
+DAUR 候选池 = {...}
+DAUR 展开 AUR/DUR 约束 = 14
+57 个删数 --&gt; r1c1&lt;&gt;1, ...</pre>
+          <p>大写 R/C/B/N 表示 Truth，小写 r/c/b/n 表示 Link；N/n 表示单元格集合。状态栏还会显示当前唯一性门控、候选盘规模和 DAUR 展开数量。</p>
+          <div class="warn">出现“投影解数量超过预算”或“搜索节点超过预算”时，搜索没有完成；此时显示的“0 个删数”不能解释为已证明无删数。应减少结构规模、整理 Truth/Link，或在 native 环境中提高预算继续测试。</div>
+        </div>
+        <div class="en">
+          <p>The result panel uses compact set notation, for example:</p>
+          <pre>28 Truths = {...}
+50 Links = {...}
+1 Fixed AUR = ...
+DAUR Pool = {...}
+DAUR Expanded AUR/DUR Constraints = 14
+57 Eliminations --&gt; r1c1&lt;&gt;1, ...</pre>
+          <p>Uppercase R/C/B/N denotes a Truth; lowercase r/c/b/n denotes a Link. N/n is a cell set. The status line also shows the active uniqueness gate, candidate-grid size, and DAUR expansion count.</p>
+          <div class="warn">“Solution budget exceeded” or “search-node budget exceeded” means the search was incomplete. A displayed count of zero eliminations is not proof that no elimination exists. Reduce the structure, simplify Truths/Links, or continue with a larger budget in a native build.</div>
+        </div>
+      </div>
+    </section>
+
+
+    <section id="superhard">
+      <h2>11. 内置超难题库 / Built-in Superhard Bank</h2>
+      <div class="pair">
+        <div class="zh">
+          <p>项目支持内置超难题库。点击生成超难题时，会从压缩内置题库随机抽取一题，解压并导入当前盘面。</p>
+          <p>当前轻量方案使用压缩 bank，题库数据段比直接 81 字符文本更小。题库生成工具可以把题串批量打包为 C++ 数据段。</p>
+          <ul>
+            <li>常规题串：约 81 字节/题。</li>
+            <li>Puzzle19 raw：约 19 字节/题。</li>
+            <li>压缩 bank：实测约 14.4 字节/题，取决于题库内容。</li>
+          </ul>
+        </div>
+        <div class="en">
+          <p>The project supports a built-in superhard puzzle bank. When generating a superhard puzzle, one entry is randomly selected from the compressed bank, decoded, and imported into the current board.</p>
+          <p>The lightweight design uses a compressed bank, much smaller than storing raw 81-character strings. The packing tool can convert a list of puzzles into a C++ data segment.</p>
+          <ul>
+            <li>Raw puzzle strings: about 81 bytes per puzzle.</li>
+            <li>Puzzle19 raw: about 19 bytes per puzzle.</li>
+            <li>Compressed bank: observed around 14.4 bytes per puzzle, depending on the bank.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="export">
+      <h2>12. 导出与分享 / Export and Sharing</h2>
+      <div class="pair">
+        <div class="zh">
+          <p>你可以导出当前盘面用于分享、复现或调试。常见导出内容包括：</p>
+          <ul>
+            <li>普通 81 字符题串。</li>
+            <li>Library 冒号格式，包含候选删除信息。</li>
+            <li>Coach JSON 或 SCv7_32 压缩串。</li>
+            <li>当前评分、步骤路径和高亮信息。</li>
+          </ul>
+          <p>OCR 导入后如果需要保存校正后的盘面，建议先在盘面上校正，再使用现有导出功能。</p>
+        </div>
+        <div class="en">
+          <p>You can export the current board for sharing, reproduction, or debugging. Common export contents include:</p>
+          <ul>
+            <li>Plain 81-character puzzle string.</li>
+            <li>Library colon format with candidate eliminations.</li>
+            <li>Coach JSON or SCv7_32 compressed string.</li>
+            <li>Current rating, step paths, and highlight information.</li>
+          </ul>
+          <p>After OCR import, correct the board first, then use the existing export feature to save the corrected position.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="mobile">
+      <h2>13. 手机端使用 / Mobile Use</h2>
+      <div class="pair">
+        <div class="zh">
+          <ul>
+            <li>手机没有 <span class="kbd">Ctrl</span> + <span class="kbd">V</span> 快捷键，因此应使用“选择图片识别”或“拍照识别”。</li>
+            <li>如果 Chrome 无法调用相机，先检查 Chrome 的相机权限是否被禁用。</li>
+            <li>某些浏览器会把“拍照识别”显示为“拍照/相册”选择，这是浏览器行为，不一定是项目问题。</li>
+            <li>识别后可直接在盘面上修改大数字和候选数。</li>
+          </ul>
+          <h3>Chrome Android 刷新缓存</h3>
+          <p>手机端没有完全等同于电脑 <span class="kbd">Ctrl</span> + <span class="kbd">F5</span> 的快捷键。开发测试时建议使用版本号参数，或在 Chrome 设置中清除该站点缓存。</p>
+        </div>
+        <div class="en">
+          <ul>
+            <li>Mobile devices do not have a <span class="kbd">Ctrl</span> + <span class="kbd">V</span> shortcut, so use “Select Image” or “Take Photo”.</li>
+            <li>If Chrome cannot open the camera, check whether camera permission is disabled in Chrome settings.</li>
+            <li>Some browsers show a “camera/gallery” chooser instead of opening the camera directly. This is browser behavior, not necessarily a project bug.</li>
+            <li>After recognition, edit large digits and candidates directly on the board.</li>
+          </ul>
+          <h3>Refreshing Chrome on Android</h3>
+          <p>There is no exact mobile equivalent of desktop <span class="kbd">Ctrl</span> + <span class="kbd">F5</span>. During development, use versioned URLs or clear the site cache in Chrome settings.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="standalone">
+      <h2>14. Standalone 版本 / Standalone Version</h2>
+      <div class="pair">
+        <div class="zh">
+          <p>Standalone 版的目标是离线使用，不需要本地服务器。为了支持图片识别，构建脚本需要把 OCR JS、ORT runtime、WASM 和模型文件内联或打包进单文件 HTML。</p>
+          <p>如果普通 Web 版能识别但 standalone 失败，优先检查：</p>
+          <ul>
+            <li><code>ort.min.js</code> 是否被正确内联。</li>
+            <li><code>.wasm</code> runtime 是否可用。</li>
+            <li><code>puzzle_localizer.ort</code> 与 <code>puzzle_classifier.ort</code> 是否被打包。</li>
+            <li>OCR 模块是否还在使用动态 <code>import()</code> 或 <code>fetch()</code> 本地文件。</li>
+          </ul>
+        </div>
+        <div class="en">
+          <p>The standalone build is meant for offline use without a local server. To support image recognition, the build script must inline or bundle the OCR JS, ORT runtime, WASM, and model files into the single HTML file.</p>
+          <p>If OCR works in the regular Web build but fails in standalone, check:</p>
+          <ul>
+            <li>whether <code>ort.min.js</code> is correctly bundled.</li>
+            <li>whether the <code>.wasm</code> runtime is available.</li>
+            <li>whether <code>puzzle_localizer.ort</code> and <code>puzzle_classifier.ort</code> are bundled.</li>
+            <li>whether the OCR module still uses dynamic <code>import()</code> or <code>fetch()</code> for local files.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="troubleshooting">
+      <h2>15. 常见问题 / Troubleshooting</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>问题 / Issue</th>
+            <th>原因 / Cause</th>
+            <th>处理 / Fix</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>图片识别提示 <code>no available backend found</code></td>
+            <td>ONNX Runtime Web 的 wasm/mjs 路径错误，或 standalone 没有正确内联 runtime。</td>
+            <td>普通版检查 <code>web-app/ocr/ort/</code>；standalone 重新生成单文件 HTML。</td>
+          </tr>
+          <tr>
+            <td>OCR 结果能显示但候选数很差</td>
+            <td>模型输出后处理没有按参考逻辑解析。</td>
+            <td>应按 <code>modelOutputs(pp) &lt; 0</code> 判断候选格，并用 <code>modelOutputs(v*81+pp) &gt; 0</code> 判断候选。</td>
+          </tr>
+          <tr>
+            <td>识别的大数字变成出数，UR 类技巧失效</td>
+            <td>没有按颜色区分提示数与出数。</td>
+            <td>黑色大数字应作为 given；非黑色大数字作为 user digit。</td>
+          </tr>
+          <tr>
+            <td>导入非唯一解被拒绝，无法校正 OCR</td>
+            <td>OCR 走了普通题串严格导入路径。</td>
+            <td>OCR 应导入为草稿盘面，非唯一只提示，不拒绝。</td>
+          </tr>
+          <tr>
+            <td>技巧找不到，但 native 测试能找到</td>
+            <td>可能是前端 wasm 没刷新，或 Manual/FindAll/Auto Solve 调用路径不一致。</td>
+            <td>重新编译 wasm，清缓存；技巧逻辑应归一化到统一搜索入口。</td>
+          </tr>
+          <tr>
+            <td>手机端无法拍照</td>
+            <td>浏览器权限被禁用，或浏览器不直接支持 <code>capture</code> 行为。</td>
+            <td>开启浏览器相机权限；或先用系统相机拍照，再用“选择图片识别”。</td>
+          </tr>
+          <tr>
+            <td>普通版盘面变黑或不显示</td>
+            <td>OCR 模块在页面启动时同步加载失败，导致主 app 初始化中断。</td>
+            <td>OCR 应懒加载；OCR 加载失败不能影响普通棋盘启动。</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="credits">
+      <h2>16. 模型与来源声明 / Credits</h2>
+      <div class="pair">
+        <div class="zh">
+          <p>数独图片识别功能使用本地模型，模型来源于 Alex Kubiesa / Sudoku OCR 训练的识别模型。项目只在浏览器本地进行识别，不上传图片，也不使用在线 fallback。</p>
+          <p>建议在应用的 About、帮助页或图片识别区域保留声明：</p>
+          <pre>数独图片识别功能使用由 Alex Kubiesa / Sudoku OCR 训练的本地识别模型。本项目不使用在线 fallback。</pre>
+        </div>
+        <div class="en">
+          <p>The Sudoku image recognition feature uses a local model trained by Alex Kubiesa / Sudoku OCR. Recognition is performed locally in the browser. Images are not uploaded and no online fallback is used.</p>
+          <p>Recommended attribution text for About, Help, or the OCR panel:</p>
+          <pre>Sudoku image recognition uses a local model trained by Alex Kubiesa / Sudoku OCR. No online fallback is used.</pre>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      const requested = new URLSearchParams(location.search).get("lang");
+      const initial = requested === "zh" || requested === "en" ? requested : "bilingual";
+      const setLanguageView = (value) => {
+        const mode = value === "zh" || value === "en" ? value : "bilingual";
+        document.body.dataset.manualLang = mode;
+        document.documentElement.lang = mode === "en" ? "en" : "zh-CN";
+        document.querySelectorAll("[data-manual-lang-button]").forEach((button) => {
+          button.setAttribute("aria-pressed", button.dataset.manualLangButton === mode ? "true" : "false");
+        });
+      };
+      document.querySelectorAll("[data-manual-lang-button]").forEach((button) => {
+        button.addEventListener("click", () => setLanguageView(button.dataset.manualLangButton));
+      });
+      setLanguageView(initial);
+    })();
+  </script>
+</body>
+</html>
