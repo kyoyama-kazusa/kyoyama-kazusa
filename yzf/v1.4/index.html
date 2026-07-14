@@ -1,0 +1,5821 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="color-scheme" content="only light" />
+  <meta name="theme-color" content="#eef2f7" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <link rel="icon" href="data:," />
+  <title>YZF_Sudoku</title>
+  <style>
+    :root {
+      color-scheme: only light;
+      --border: #d9dde3;
+      --muted: #687386;
+      --panel: #f7f8fa;
+      --ink: #1d2430;
+      --accent: #1466cc;
+      --place: #0b7a4b;
+      --delete: #b42318;
+    }
+    * { box-sizing: border-box; }
+    html,
+    body {
+      width: 100%;
+      overflow-x: hidden;
+    }
+    html {
+      min-height: 100%;
+      background-color: #eef2f7;
+      color-scheme: only light;
+    }
+    body {
+      min-height: 100vh;
+      min-height: 100dvh;
+      margin: 0;
+      padding: 0;
+      color: var(--ink);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.5;
+      background-color: #eef2f7;
+    }
+    .app-shell {
+      width: 100%;
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 6px;
+    }
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      padding: 0 0 4px;
+    }
+    .topbar label {
+      display: inline-flex;
+      align-items: center;
+      margin: 0;
+    }
+    .topbar select {
+      min-height: 30px;
+      margin: 0;
+      padding: 4px 9px;
+      line-height: 1.2;
+      vertical-align: middle;
+    }
+    .brand {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 0;
+      min-width: 0;
+    }
+    .brand-title {
+      font-size: 15px;
+      font-weight: 750;
+      letter-spacing: 0;
+      line-height: 1.1;
+      white-space: nowrap;
+    }
+    .brand-subtitle {
+      display: none;
+    }
+
+    .manual-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 30px;
+      margin: 0;
+      padding: 4px 9px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 650;
+      line-height: 1.2;
+      text-decoration: none;
+      white-space: nowrap;
+      vertical-align: middle;
+    }
+    .manual-link:hover, .manual-link:focus {
+      border-color: var(--accent);
+      background: #eff6ff;
+      outline: none;
+    }
+    .card {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+    }
+    textarea {
+      width: 100%;
+      height: 72px;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    }
+    button {
+      margin-right: 8px;
+      margin-top: 8px;
+      padding: 7px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--ink);
+      cursor: pointer;
+    }
+    button:hover { border-color: var(--accent); color: var(--accent); }
+    button.primary {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: #fff;
+    }
+    button.primary:hover { color: #fff; }
+    button.compact {
+      min-height: 36px;
+      margin: 0;
+      padding: 7px 9px;
+    }
+    select {
+      margin-top: 0;
+      padding: 7px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--ink);
+    }
+    pre {
+      max-height: 180px;
+      margin: 12px 0 0;
+      padding: 12px;
+      overflow: auto;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--panel);
+    }
+    .json-treeview {
+      margin-top: 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: #fff;
+      overflow: auto;
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      font-size: 13px;
+      max-height: 620px;
+    }
+    .json-treeview ul {
+      position: relative;
+      margin: 0;
+      padding-left: 22px;
+      list-style: none;
+    }
+    .json-treeview > ul {
+      padding: 6px 0 6px 8px;
+    }
+    .json-treeview ul ul::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 8px;
+      left: 10px;
+      border-left: 1px dotted #aeb7c4;
+    }
+    .json-treeview li {
+      position: relative;
+      margin: 0;
+      padding: 0;
+    }
+    .json-treeview li::before {
+      content: "";
+      position: absolute;
+      top: 13px;
+      left: -12px;
+      width: 12px;
+      border-top: 1px dotted #aeb7c4;
+    }
+    .json-treeview > ul > li::before {
+      display: none;
+    }
+    .tree-row {
+      display: inline-flex;
+      align-items: center;
+      min-width: 100%;
+      min-height: 26px;
+      padding: 2px 8px 2px 0;
+      white-space: nowrap;
+      cursor: default;
+    }
+    .tree-row:hover,
+    .tree-row.selected {
+      background: #eaf3ff;
+      outline: 1px solid #b7d8ff;
+      outline-offset: -1px;
+    }
+    .tree-row.step-difficulty-1 { background: rgb(255, 255, 255); }
+    .tree-row.step-difficulty-2 { background: rgb(100, 255, 100); }
+    .tree-row.step-difficulty-3 { background: rgb(255, 255, 100); }
+    .tree-row.step-difficulty-4 { background: rgb(255, 150, 80); }
+    .tree-row.step-difficulty-5 { background: rgb(255, 100, 100); }
+    .tree-row.step-row:hover {
+      filter: brightness(0.96);
+      outline: 1px solid #475569;
+      outline-offset: -1px;
+    }
+    .tree-row.step-row.selected {
+      position: relative;
+      filter: brightness(0.90) saturate(1.12);
+      outline: 3px solid #0f172a;
+      outline-offset: -3px;
+      box-shadow: inset 6px 0 0 #0f172a, 0 0 0 2px rgba(255,255,255,0.92);
+      font-weight: 800;
+      z-index: 2;
+    }
+    .tree-row.branchable-step-row {
+      cursor: context-menu;
+    }
+    .branch-panel {
+      margin: 0 0 8px;
+      padding: 8px 10px;
+      border: 1px solid #bfdbfe;
+      border-radius: 8px;
+      background: #eff6ff;
+      color: #1e3a8a;
+      font-size: 13px;
+    }
+    .branch-panel.hidden {
+      display: none;
+    }
+    .branch-panel-title {
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .branch-panel-detail {
+      overflow-wrap: anywhere;
+      line-height: 1.45;
+    }
+    .branch-panel-delta {
+      margin-top: 4px;
+      font-weight: 700;
+      line-height: 1.45;
+    }
+    .branch-panel-delta.better {
+      color: #047857;
+    }
+    .branch-panel-delta.worse {
+      color: #b45309;
+    }
+    .branch-panel-delta.neutral {
+      color: #334155;
+    }
+    .branch-panel-change {
+      margin-top: 2px;
+      color: #475569;
+      line-height: 1.45;
+      overflow-wrap: anywhere;
+    }
+    .branch-panel-actions {
+      margin-top: 6px;
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .all-steps-filter {
+      display: grid;
+      grid-template-columns: minmax(140px, 1.4fr) minmax(100px, 1fr) minmax(100px, 1fr) auto auto;
+      gap: 6px;
+      align-items: center;
+      margin: 0 0 8px;
+      padding: 8px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #f8fafc;
+      font-size: 12px;
+    }
+    .all-steps-filter input,
+    .all-steps-filter select {
+      width: 100%;
+      min-width: 0;
+      height: 30px;
+      margin: 0;
+      padding: 4px 7px;
+      font-size: 12px;
+    }
+    .all-steps-filter label {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+      color: var(--muted);
+      user-select: none;
+    }
+    .all-steps-filter input[type="checkbox"] {
+      width: auto;
+      height: auto;
+      margin: 0;
+      padding: 0;
+    }
+    .all-steps-filter button {
+      height: 30px;
+      margin: 0;
+      padding: 4px 8px;
+      font-size: 12px;
+    }
+    .all-steps-filter-status {
+      grid-column: 1 / -1;
+      color: var(--muted);
+      overflow-wrap: anywhere;
+    }
+
+    @media (max-width: 720px) {
+      .all-steps-filter {
+        grid-template-columns: 1fr 1fr;
+      }
+      .all-steps-filter input[type="search"] {
+        grid-column: 1 / -1;
+      }
+    }
+
+    .tree-toggle {
+      width: 15px;
+      height: 15px;
+      margin-right: 4px;
+      padding: 0;
+      border: 1px solid #8793a3;
+      border-radius: 0;
+      background: #fff;
+      color: #1f2937;
+      font: 12px/13px ui-monospace, SFMono-Regular, Consolas, monospace;
+      text-align: center;
+      cursor: pointer;
+      flex: 0 0 15px;
+    }
+    .tree-toggle.empty {
+      border-color: transparent;
+      background: transparent;
+      cursor: default;
+    }
+    .tree-key {
+      color: #183b69;
+      margin-right: 6px;
+    }
+    .tree-colon {
+      color: var(--muted);
+      margin-right: 6px;
+    }
+    .tree-value {
+      color: #162033;
+    }
+    .tree-type {
+      color: var(--muted);
+      margin-left: 8px;
+    }
+    .tree-value.string { color: #9a3412; }
+    .tree-value.number { color: #075985; }
+    .tree-value.boolean { color: #6d28d9; }
+    .tree-value.null { color: #7f1d1d; }
+    .tree-value.collection { color: #475569; }
+    .hidden {
+      display: none;
+    }
+    .ocr-import-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin: 8px 0;
+    }
+    .ocr-import-actions button,
+    .ocr-import-actions select,
+    .ocr-file-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 36px;
+      margin: 0;
+      padding: 7px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--ink);
+      font: inherit;
+      font-size: 14px;
+      line-height: 1.2;
+      vertical-align: middle;
+    }
+    .ocr-import-actions select {
+      min-width: 132px;
+      cursor: pointer;
+    }
+    .ocr-file-button {
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      user-select: none;
+    }
+    .ocr-file-button:hover, .ocr-file-button:focus {
+      border-color: var(--accent);
+      color: var(--accent);
+      outline: none;
+    }
+    .ocr-toggle-chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      min-height: 36px;
+      margin: 0;
+      padding: 7px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--ink);
+      font: inherit;
+      font-size: 14px;
+      line-height: 1.2;
+      cursor: pointer;
+      user-select: none;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+    .ocr-toggle-chip:hover,
+    .ocr-toggle-chip:focus-within {
+      border-color: var(--accent);
+      color: var(--accent);
+      outline: none;
+    }
+    .ocr-toggle-chip input {
+      margin: 0;
+      inline-size: 14px;
+      block-size: 14px;
+      accent-color: #2563eb;
+    }
+.ocr-native-file-input {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+      pointer-events: auto;
+      font-size: 64px;
+    }
+    .ocr-camera-action {
+      display: none;
+    }
+    @media (pointer: coarse) {
+      .ocr-camera-action {
+        display: inline-flex;
+      }
+    }
+
+    .workspace {
+      width: 100%;
+      max-width: min(100vw, 720px);
+      margin: 0 auto;
+    }
+    .board-wrap {
+      width: 100%;
+      padding: 6px;
+    }
+    .board-meta {
+      min-height: 20px;
+      margin: 0 0 4px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .board-stage {
+      position: relative;
+      width: var(--yzf-board-size, min(100%, 700px));
+      height: var(--yzf-board-size, min(100%, 700px));
+      max-width: 100%;
+      margin: 0 auto;
+      aspect-ratio: 1 / 1;
+      flex: 0 0 auto;
+      contain: layout size style paint;
+      overflow: visible;
+    }
+    .sudoku-board {
+      display: grid;
+      grid-template-columns: repeat(9, minmax(0, 1fr));
+      grid-template-rows: repeat(9, minmax(0, 1fr));
+      width: 100%;
+      max-width: none;
+      height: 100%;
+      margin: 0;
+      aspect-ratio: auto;
+      border: 2px solid #111827;
+      background: #111827;
+      gap: 0;
+      position: relative;
+      z-index: 2;
+    }
+    .yzf-underlay {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      overflow: visible;
+      z-index: 1;
+    }
+    .yzf-overlay {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      overflow: visible;
+      z-index: 3;
+    }
+    .yzf-debug-panel {
+      margin-top: 8px;
+      padding: 8px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: #fffaf2;
+    }
+
+    .tlg-solver-panel {
+      margin-top: 8px;
+      padding: 8px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: #f8fbff;
+    }
+    .tlg-solver-panel summary {
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 800;
+      color: #0f3d7a;
+      user-select: none;
+    }
+    .tlg-solver-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px 8px;
+      margin-top: 8px;
+      font-size: 12px;
+      color: #274161;
+    }
+    .tlg-solver-grid label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+    }
+    .tlg-solver-grid select,
+    .tlg-solver-grid input[type="number"] {
+      min-width: 0;
+      max-width: 100%;
+    }
+    .tlg-solver-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .tlg-solver-controls button {
+      margin: 0;
+    }
+    .tlg-solver-status {
+      min-height: 22px;
+      margin-top: 8px;
+      padding: 6px 8px;
+      border-left: 4px solid #1466cc;
+      background: #eff6ff;
+      color: #1e3a5f;
+      font-size: 12px;
+      line-height: 1.4;
+      white-space: normal;
+      word-break: break-word;
+    }
+    .tlg-solver-status[data-tone="error"] {
+      border-left-color: #b42318;
+      background: #fef3f2;
+      color: #7a271a;
+    }
+    .tlg-solver-status[data-tone="ok"] {
+      border-left-color: #0b7a4b;
+      background: #ecfdf3;
+      color: #106548;
+    }
+    .tlg-solver-solution-panel {
+      margin-top: 8px;
+      padding: 8px 10px;
+      border: 1px solid rgba(11, 122, 75, 0.22);
+      border-radius: 6px;
+      background: #f7fff9;
+      color: #173a2b;
+    }
+    .tlg-solver-solution-title {
+      margin-bottom: 5px;
+      color: #0b6b43;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .tlg-solver-solution {
+      margin: 0;
+      overflow-x: auto;
+      color: #172b22;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      word-break: normal;
+    }
+    .tlg-solver-state-panel {
+      margin-top: 8px;
+      padding: 7px 8px;
+      border: 1px solid rgba(15, 61, 122, 0.14);
+      border-radius: 6px;
+      background: #ffffff;
+      color: #243b55;
+      font-size: 12px;
+    }
+    .tlg-solver-state-title {
+      font-weight: 800;
+      margin-bottom: 5px;
+      color: #0f3d7a;
+    }
+    .tlg-solver-state-group {
+      margin-top: 5px;
+    }
+    .tlg-solver-state-group-title {
+      font-weight: 700;
+      margin-bottom: 3px;
+    }
+    .tlg-solver-state-items {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    .tlg-solver-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 6px;
+      border: 1px solid rgba(20, 102, 204, 0.2);
+      border-radius: 999px;
+      background: #eff6ff;
+      color: #183b63;
+      line-height: 1.2;
+    }
+    .tlg-solver-chip button {
+      min-width: 0;
+      margin: 0;
+      padding: 0 3px;
+      border: 0;
+      background: transparent;
+      color: #7a271a;
+      font-weight: 900;
+      cursor: pointer;
+    }
+    .tlg-solver-debug {
+      margin-top: 8px;
+      border-top: 1px solid rgba(15, 61, 122, 0.12);
+      padding-top: 6px;
+    }
+    .tlg-solver-debug summary {
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .tlg-solver-textarea {
+      width: 100%;
+      min-height: 76px;
+      margin-top: 6px;
+      resize: vertical;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+    }
+    .tlg-solver-json {
+      max-height: 160px;
+      margin-top: 8px;
+      padding: 8px;
+      overflow: auto;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: #fff;
+      color: #16324f;
+      font-size: 12px;
+      line-height: 1.35;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .tlg-library-dialog {
+      width: min(1040px, calc(100vw - 24px));
+      max-width: 1040px;
+      max-height: min(88dvh, 820px);
+      padding: 0;
+      border: 1px solid #9fb5d1;
+      border-radius: 12px;
+      background: #f8fbff;
+      color: #1e3550;
+      box-shadow: 0 24px 70px rgba(15, 35, 65, 0.28);
+      overflow: hidden;
+    }
+    .tlg-library-dialog::backdrop {
+      background: rgba(15, 23, 42, 0.48);
+      backdrop-filter: blur(2px);
+    }
+    .tlg-library-shell {
+      display: grid;
+      grid-template-rows: auto auto auto auto auto minmax(0, 1fr) auto;
+      max-height: min(88dvh, 820px);
+      min-height: min(640px, calc(100dvh - 24px));
+    }
+    .tlg-library-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 12px;
+      border-bottom: 1px solid #cbd8e8;
+      background: #eaf3ff;
+    }
+    .tlg-library-header strong {
+      font-size: 16px;
+      color: #123e73;
+    }
+    .tlg-library-header button {
+      min-width: 36px;
+      min-height: 32px;
+      margin: 0;
+      padding: 4px 10px;
+    }
+    .tlg-library-toolbar,
+    .tlg-library-filebar,
+    .tlg-library-sharebar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 10px 0;
+    }
+    .tlg-library-toolbar button,
+    .tlg-library-filebar button,
+    .tlg-library-sharebar button {
+      min-height: 32px;
+      margin: 0;
+    }
+    .tlg-library-filebar {
+      padding-bottom: 8px;
+      border-bottom: 1px solid #d7e1ee;
+    }
+    .tlg-library-filebar label {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      min-width: 0;
+      font-size: 12px;
+      color: #425b79;
+    }
+    .tlg-library-filebar select {
+      min-width: 140px;
+      height: 32px;
+      margin: 0;
+      padding: 3px 26px 3px 7px;
+    }
+    .tlg-library-sharebar {
+      padding-top: 7px;
+      padding-bottom: 7px;
+      border-bottom: 1px solid #d7e1ee;
+      background: #f4f8fd;
+    }
+    .tlg-library-share-panel {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(230px, 0.38fr);
+      gap: 8px 10px;
+      padding: 8px 10px;
+      border-bottom: 1px solid #d7e1ee;
+      background: #eef5fd;
+    }
+    .tlg-library-share-panel[hidden] { display: none; }
+    .tlg-library-share-panel label {
+      display: grid;
+      grid-row: 1 / span 2;
+      gap: 4px;
+      min-width: 0;
+      color: #3f5874;
+      font-size: 12px;
+      font-weight: 750;
+    }
+    .tlg-library-share-panel textarea {
+      width: 100%;
+      min-width: 0;
+      min-height: 126px;
+      margin: 0;
+      padding: 8px;
+      resize: vertical;
+      border: 1px solid #afc2d9;
+      border-radius: 7px;
+      background: #fff;
+      color: #16324f;
+      font: 12px/1.42 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      overflow-wrap: anywhere;
+    }
+    .tlg-library-share-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-content: start;
+      gap: 6px;
+    }
+    .tlg-library-share-actions button {
+      min-height: 32px;
+      margin: 0;
+    }
+    .tlg-library-share-summary {
+      min-height: 72px;
+      padding: 8px;
+      border: 1px solid #d2dfed;
+      border-radius: 7px;
+      background: #fff;
+      color: #405a78;
+      font-size: 12px;
+      line-height: 1.45;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+    .tlg-library-share-summary[data-tone="error"] {
+      border-color: #edb6b1;
+      background: #fff5f4;
+      color: #8d261d;
+    }
+    .tlg-library-share-summary[data-tone="ok"] {
+      border-color: #b9dec8;
+      background: #f3fbf6;
+      color: #126344;
+    }
+    .tlg-library-main {
+      display: grid;
+      grid-template-columns: minmax(360px, 1.25fr) minmax(280px, 0.75fr);
+      gap: 10px;
+      min-height: 0;
+      padding: 10px;
+      overflow: hidden;
+    }
+    .tlg-library-list-panel,
+    .tlg-library-editor {
+      min-width: 0;
+      min-height: 0;
+      border: 1px solid #cbd8e8;
+      border-radius: 8px;
+      background: #fff;
+      overflow: hidden;
+    }
+    .tlg-library-search-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 8px;
+      padding: 8px;
+      border-bottom: 1px solid #e0e8f2;
+    }
+    .tlg-library-search-row input {
+      width: 100%;
+      min-width: 0;
+      height: 34px;
+      margin: 0;
+    }
+    .tlg-library-count {
+      color: #5c6f86;
+      font-size: 12px;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+    .tlg-library-table-wrap {
+      height: calc(100% - 51px);
+      min-height: 240px;
+      overflow: auto;
+      overscroll-behavior: contain;
+    }
+    .tlg-library-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      font-size: 12px;
+    }
+    .tlg-library-table th,
+    .tlg-library-table td {
+      padding: 6px 7px;
+      border-bottom: 1px solid #edf1f6;
+      overflow: hidden;
+      text-align: left;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .tlg-library-table th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: #f1f6fc;
+      color: #405a78;
+      font-weight: 800;
+    }
+    .tlg-library-table th:nth-child(1),
+    .tlg-library-table td:nth-child(1) { width: 52px; text-align: right; }
+    .tlg-library-table th:nth-child(3),
+    .tlg-library-table td:nth-child(3) { width: 88px; }
+    .tlg-library-table th:nth-child(4),
+    .tlg-library-table td:nth-child(4) { width: 104px; }
+    .tlg-library-row { cursor: pointer; }
+    .tlg-library-row:hover { background: #f4f8fd; }
+    .tlg-library-row[aria-selected="true"] {
+      background: #e6f1ff;
+      box-shadow: inset 3px 0 0 #3478f6;
+    }
+    .tlg-library-empty {
+      padding: 28px 12px;
+      color: #718096;
+      text-align: center;
+    }
+    .tlg-library-editor {
+      display: grid;
+      align-content: start;
+      gap: 8px;
+      padding: 10px;
+      overflow: auto;
+    }
+    .tlg-library-editor label {
+      display: grid;
+      gap: 4px;
+      min-width: 0;
+      color: #3f5874;
+      font-size: 12px;
+      font-weight: 750;
+    }
+    .tlg-library-editor input,
+    .tlg-library-editor textarea {
+      width: 100%;
+      min-width: 0;
+      margin: 0;
+      font: inherit;
+      font-weight: 500;
+    }
+    .tlg-library-editor textarea {
+      min-height: 150px;
+      resize: vertical;
+      line-height: 1.45;
+    }
+    .tlg-library-summary {
+      padding: 8px;
+      border: 1px solid #d9e4f1;
+      border-radius: 7px;
+      background: #f7faff;
+      color: #4b617b;
+      font-size: 12px;
+      line-height: 1.45;
+      white-space: pre-wrap;
+    }
+    .tlg-library-status {
+      min-height: 34px;
+      padding: 8px 11px;
+      border-top: 1px solid #cbd8e8;
+      background: #eef5fd;
+      color: #294663;
+      font-size: 12px;
+      line-height: 1.4;
+    }
+    .tlg-library-status[data-tone="error"] {
+      background: #fff1f0;
+      color: #8d261d;
+    }
+    .tlg-library-status[data-tone="ok"] {
+      background: #edf9f2;
+      color: #126344;
+    }
+    @media (max-width: 760px) {
+      .tlg-library-dialog {
+        width: 100vw;
+        max-width: none;
+        max-height: 100dvh;
+        height: 100dvh;
+        border: 0;
+        border-radius: 0;
+      }
+      .tlg-library-shell {
+        min-height: 100dvh;
+        max-height: 100dvh;
+      }
+      .tlg-library-main {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: minmax(250px, 1fr) auto;
+        overflow: auto;
+      }
+      .tlg-library-list-panel { min-height: 300px; }
+      .tlg-library-editor textarea { min-height: 100px; }
+      .tlg-library-toolbar,
+      .tlg-library-filebar,
+      .tlg-library-sharebar { gap: 5px; }
+      .tlg-library-toolbar button,
+      .tlg-library-filebar button,
+      .tlg-library-sharebar button { flex: 1 1 auto; }
+      .tlg-library-filebar label { flex: 1 1 100%; }
+      .tlg-library-filebar select { flex: 1 1 auto; }
+      .tlg-library-share-panel { grid-template-columns: minmax(0, 1fr); }
+      .tlg-library-share-panel label { grid-row: auto; }
+      .tlg-library-share-panel textarea { min-height: 150px; }
+    }
+
+    .candidate.tlg-virtual-candidate {
+      outline: max(1px, 0.14em) solid #7c3aed;
+      outline-offset: max(-3px, -0.22em);
+      border-radius: 999px;
+      background: color-mix(in srgb, #ede9fe 70%, transparent);
+      font-weight: 900;
+    }
+    .candidate.tlg-aur-corner {
+      outline: max(1px, 0.14em) dashed #ea580c;
+      outline-offset: max(-2px, -0.18em);
+      border-radius: 999px;
+      background: color-mix(in srgb, #ffedd5 70%, transparent);
+      font-weight: 900;
+    }
+    .candidate.tlg-aur-corner-secondary {
+      outline: max(1px, 0.14em) dashed #2563eb;
+      outline-offset: max(-2px, -0.18em);
+      border-radius: 999px;
+      background: color-mix(in srgb, #dbeafe 70%, transparent);
+      font-weight: 900;
+    }
+    .candidate.tlg-daur-candidate {
+      outline: max(1px, 0.14em) dotted #0891b2;
+      outline-offset: max(-2px, -0.18em);
+      border-radius: 999px;
+      background: color-mix(in srgb, #cffafe 72%, transparent);
+      font-weight: 900;
+    }
+    .candidate.tlg-gur-candidate {
+      outline: max(2px, 0.18em) double #7c2d12;
+      outline-offset: max(-3px, -0.22em);
+      border-radius: 999px;
+      background: color-mix(in srgb, #fed7aa 72%, transparent);
+      font-weight: 900;
+    }
+    .candidate.tlg-elimination {
+      color: #7a0012;
+      font-weight: 900;
+      z-index: 4;
+    }
+    .candidate.tlg-elimination::before,
+    .candidate.tlg-elimination::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 1.42em;
+      height: max(2px, 0.16em);
+      border-radius: 999px;
+      background: #b42318;
+      transform-origin: center;
+      z-index: 40;
+      pointer-events: none;
+      filter: drop-shadow(0 1px 0 rgba(255,255,255,0.9))
+              drop-shadow(0 -1px 0 rgba(255,255,255,0.9))
+              drop-shadow(1px 0 0 rgba(255,255,255,0.9))
+              drop-shadow(-1px 0 0 rgba(255,255,255,0.9));
+    }
+    .candidate.tlg-elimination::before {
+      transform: translate(-50%, -50%) rotate(45deg);
+    }
+    .candidate.tlg-elimination::after {
+      transform: translate(-50%, -50%) rotate(-45deg);
+    }
+    .candidate.tlg-selected-endpoint {
+      box-shadow: inset 0 0 0 max(1px, 0.14em) #0ea5e9;
+      border-radius: 999px;
+    }
+    .candidate.tlg-multi-selected {
+      border-radius: 999px;
+      background: color-mix(in srgb, #fee2e2 78%, transparent);
+      box-shadow: inset 0 0 0 max(2px, 0.16em) #dc2626;
+      color: #7f1d1d;
+      font-weight: 900;
+      z-index: 12;
+    }
+    .tlg-context-menu {
+      position: fixed;
+      z-index: 10000;
+      min-width: 230px;
+      max-width: min(300px, calc(100vw - 16px));
+      padding: 5px;
+      border: 1px solid rgba(15, 23, 42, 0.28);
+      border-radius: 7px;
+      background: #ffffff;
+      box-shadow: 0 12px 32px rgba(15, 23, 42, 0.22);
+      color: #172033;
+      font-size: 13px;
+      user-select: none;
+    }
+    .tlg-context-header {
+      padding: 5px 8px 7px;
+      border-bottom: 1px solid rgba(15, 23, 42, 0.12);
+      margin-bottom: 4px;
+      color: #334155;
+      font-weight: 800;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .tlg-context-item {
+      display: flex;
+      width: 100%;
+      min-height: 30px;
+      align-items: center;
+      justify-content: flex-start;
+      margin: 0;
+      padding: 5px 9px;
+      border: 0;
+      border-radius: 4px;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      line-height: 1.25;
+      text-align: left;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .tlg-context-item:hover,
+    .tlg-context-item:focus-visible,
+    .tlg-context-submenu-wrap:focus-within > .tlg-context-submenu-trigger {
+      outline: none;
+      background: #eaf2ff;
+      color: #0f3d7a;
+    }
+    .tlg-context-separator {
+      height: 1px;
+      margin: 4px 3px;
+      background: rgba(15, 23, 42, 0.14);
+    }
+    .tlg-context-submenu-wrap {
+      position: relative;
+    }
+    .tlg-context-submenu-trigger::after {
+      content: "›";
+      margin-left: auto;
+      padding-left: 16px;
+      color: #64748b;
+      font-size: 18px;
+      line-height: 1;
+    }
+    .tlg-context-submenu {
+      display: none;
+      position: absolute;
+      top: -5px;
+      left: calc(100% + 4px);
+      min-width: 170px;
+      padding: 5px;
+      border: 1px solid rgba(15, 23, 42, 0.28);
+      border-radius: 7px;
+      background: #fff;
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.2);
+    }
+    .tlg-context-submenu-wrap:hover > .tlg-context-submenu,
+    .tlg-context-submenu-wrap:focus-within > .tlg-context-submenu,
+    .tlg-context-submenu-wrap.tlg-context-submenu-open > .tlg-context-submenu {
+      display: block;
+    }
+    .tlg-context-open-left .tlg-context-submenu {
+      right: calc(100% + 4px);
+      left: auto;
+    }
+    .candidate.tlg-house-membership {
+      isolation: isolate;
+      font-weight: 900;
+    }
+    .candidate.tlg-house-membership > .tlg-house-overlay {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 1.62em;
+      height: 1.62em;
+      overflow: visible;
+      pointer-events: none;
+      transform: translate(-50%, calc(-50% - 1.5cqw));
+      z-index: -1;
+    }
+    .candidate.tlg-truth-candidate {
+      /* Kept as a no-op compatibility selector for cached markup. V563 uses
+         the SVG house-membership overlay instead of a single blue outline. */
+      font-weight: 900;
+    }
+    /* Cell Links remain cell-level objects. V574 changed only row/column/box
+       Link rendering to candidate-level overlays; it must not suppress this fill. */
+    .sudoku-cell.tlg-cell-link {
+      background-image: linear-gradient(rgba(14, 165, 233, 0.24), rgba(14, 165, 233, 0.24)) !important;
+    }
+    .sudoku-cell.tlg-cell-truth::after {
+      content: "";
+      position: absolute;
+      inset: max(2px, 0.12em);
+      border: max(2px, 0.16em) solid rgba(20, 102, 204, 0.62);
+      border-radius: max(2px, 0.12em);
+      pointer-events: none;
+      z-index: 8;
+    }
+.yzf-debug-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #8a3b12;
+    }
+.yzf-debug-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 6px;
+    }
+.yzf-debug-controls select,
+    .yzf-debug-controls button {
+      margin: 0;
+    }
+.yzf-debug-status {
+      min-height: 22px;
+      margin-top: 8px;
+      padding: 6px 8px;
+      border-left: 4px solid #d97706;
+      background: #fff7ed;
+      color: #7c2d12;
+      font-size: 13px;
+      line-height: 1.4;
+      white-space: normal;
+      word-break: break-word;
+    }
+    .yzf-debug-note {
+      margin-top: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #9a3412;
+    }
+.yzf-debug-legend {
+      margin-top: 8px;
+      border-top: 1px solid rgba(154, 52, 18, 0.15);
+      padding-top: 6px;
+    }
+    .yzf-debug-legend summary {
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+      color: #7c2d12;
+      user-select: none;
+    }
+    .yzf-debug-legend-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px 10px;
+      margin-top: 8px;
+      font-size: 11px;
+      color: #5b2a12;
+    }
+    .yzf-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+    }
+    .yzf-legend-chip {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .yzf-legend-chip.node {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      border: 1.5px solid #0f172a;
+    }
+    .yzf-legend-chip.node.on {
+      background: #16a34a;
+    }
+    .yzf-legend-chip.node.off {
+      background: #f59e0b;
+    }
+    .yzf-legend-chip.group-sector {
+      min-width: 24px;
+      height: 18px;
+      padding: 0 4px;
+      border-radius: 999px;
+      border: 1px solid rgba(124, 58, 237, 0.45);
+      background: rgba(14, 116, 144, 0.07);
+      color: #6d28d9;
+      font-size: 10px;
+      font-weight: 700;
+    }
+    .yzf-legend-chip.edge {
+      position: relative;
+      width: 26px;
+      height: 0;
+      border-top: 2px solid #1f2937;
+      opacity: 0.75;
+    }
+    .yzf-legend-chip.edge.weak {
+      border-top-style: dashed;
+      opacity: 0.6;
+    }
+    .yzf-legend-chip.edge.group {
+      height: 18px;
+      border-top-color: #7c3aed;
+      color: #7c3aed;
+      font-size: 10px;
+      font-weight: 700;
+      line-height: 1;
+    }
+    .yzf-legend-chip.candidate {
+      color: #b42318;
+      font-size: 14px;
+      font-weight: 800;
+      line-height: 1;
+    }
+    @media (max-width: 760px) {
+      .yzf-debug-legend-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .yzf-overlay-sector {
+      stroke-width: 2;
+    }
+    .yzf-overlay-sector.grouped {
+      fill: rgba(14, 116, 144, 0.07);
+      stroke: rgba(14, 116, 144, 0.5);
+    }
+    .yzf-overlay-sector.start {
+      fill: rgba(22, 101, 52, 0.09);
+      stroke: rgba(22, 101, 52, 0.58);
+    }
+    .yzf-overlay-sector.end {
+      fill: rgba(147, 51, 234, 0.08);
+      stroke: rgba(147, 51, 234, 0.58);
+    }
+    .yzf-overlay-edge {
+      fill: none;
+      stroke: #ef4444;
+      stroke-width: 2.2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      opacity: 0.95;
+    }
+    .yzf-overlay-edge.weak {
+      stroke: #ef4444;
+      stroke-dasharray: 6 5;
+      stroke-width: 1.95;
+      opacity: 0.92;
+    }
+    .yzf-overlay-edge.group {
+      stroke: #ef4444;
+      opacity: 0.95;
+    }
+    .yzf-overlay-edge.blossom-main {
+      stroke: #16a34a;
+    }
+    .yzf-overlay-edge.blossom-branch,
+    .yzf-overlay-edge.braid-main {
+      stroke: #ef4444;
+    }
+    .yzf-overlay-edge.braid-branch {
+      stroke: #2563eb;
+    }
+    .yzf-overlay-edge.blossom-main.weak,
+    .yzf-overlay-edge.blossom-branch.weak,
+    .yzf-overlay-edge.braid-main.weak,
+    .yzf-overlay-edge.braid-branch.weak {
+      stroke-dasharray: 7 5;
+      stroke-width: 2.05;
+      opacity: 0.92;
+    }
+    .yzf-overlay-edge.blossom-main.strong,
+    .yzf-overlay-edge.blossom-branch.strong,
+    .yzf-overlay-edge.braid-main.strong,
+    .yzf-overlay-edge.braid-branch.strong {
+      stroke-dasharray: none;
+      stroke-width: 2.25;
+      opacity: 0.95;
+    }
+    .yzf-overlay-edge.af {
+      stroke: #ef4444;
+      opacity: 0.95;
+    }
+    .yzf-overlay-edge.manual-construction {
+      stroke: #f97316;
+      stroke-width: 2.35;
+      opacity: 0.96;
+    }
+    .yzf-overlay-edge.manual-construction.weak {
+      stroke: #f97316;
+      stroke-dasharray: 7 5;
+      stroke-width: 2.08;
+      opacity: 0.92;
+    }
+    .yzf-overlay-edge-label {
+      fill: #b91c1c;
+      font-size: 11px;
+      font-weight: 700;
+      text-anchor: middle;
+      paint-order: stroke;
+      stroke: rgba(255, 255, 255, 0.92);
+      stroke-width: 3px;
+    }
+    .yzf-overlay-node {
+      opacity: 0.98;
+    }
+    .yzf-overlay-node.start,
+    .yzf-overlay-node.single.start,
+    .yzf-overlay-node.group.start {
+      fill: rgba(255, 214, 74, 0.8);
+    }
+    .yzf-overlay-node.single.on {
+      fill: rgba(48, 212, 95, 0.5);
+    }
+    .yzf-overlay-node.single.off {
+      fill: rgba(127, 199, 255, 0.82);
+    }
+    .yzf-overlay-node.group.on {
+      fill: rgba(48, 212, 95, 0.42);
+    }
+    .yzf-overlay-node.group.off {
+      fill: rgba(127, 199, 255, 0.74);
+    }
+    .yzf-overlay-node-label {
+      fill: #0f172a;
+      font-size: 10px;
+      font-weight: 700;
+      text-anchor: middle;
+      paint-order: stroke;
+      stroke: rgba(255, 255, 255, 0.92);
+      stroke-width: 3px;
+    }
+    .yzf-overlay-candidate-mark {
+      stroke: #b42318;
+      stroke-width: 2;
+      stroke-linecap: round;
+      opacity: 0.88;
+    }
+    .yzf-overlay-candidate-mark.formal {
+      stroke: #8b1e3f;
+      stroke-width: 2.2;
+      opacity: 0.94;
+    }
+    .yzf-overlay-candidate-label {
+      fill: #7a0012;
+      font-size: 10px;
+      font-weight: 700;
+      text-anchor: start;
+      paint-order: stroke;
+      stroke: rgba(255, 255, 255, 0.92);
+      stroke-width: 3px;
+    }
+    .yzf-overlay-candidate-label.formal {
+      fill: #5b0f2c;
+    }
+    .yzf-overlay-banner {
+      fill: rgba(255, 247, 237, 0.96);
+      stroke: rgba(217, 119, 6, 0.75);
+      stroke-width: 1.5;
+    }
+    .yzf-overlay-banner-text {
+      fill: #9a3412;
+      font-size: 15px;
+      font-weight: 700;
+      text-anchor: middle;
+    }
+    .sudoku-cell {
+      position: relative;
+      display: grid;
+      place-items: center;
+      min-width: 0;
+      min-height: 0;
+      border: 1px solid #9ca3af;
+      background: #fff;
+      overflow: hidden;
+      container-type: inline-size;
+    }
+    .sudoku-cell.box-left { border-left-color: #111827; border-left-width: 2px; }
+    .sudoku-cell.box-top { border-top-color: #111827; border-top-width: 2px; }
+    .sudoku-cell.box-right { border-right-color: #111827; border-right-width: 2px; }
+    .sudoku-cell.box-bottom { border-bottom-color: #111827; border-bottom-width: 2px; }
+    .sudoku-cell.hint-structure { background: #fff; }
+    .sudoku-cell.hint-place { background: #e8f8ef; }
+    .sudoku-cell.hint-eliminate { background: #fff; }
+    .sudoku-cell.solver-cell-bkclr {
+      background: var(--solver-cell-bg, #eef5ff) !important;
+    }
+    .sudoku-cell.solver-cell-bkclr-1 { background: #86E8D0 !important; }
+    .sudoku-cell.solver-cell-bkclr-2 { background: #7FBBFF !important; }
+    .sudoku-cell.solver-cell-bkclr-3 { background: #D8B2FF !important; }
+    .sudoku-cell.solver-cell-bkclr-4 { background: #FFC059 !important; }
+    .sudoku-cell.solver-cell-bkclr-5 { background: #B1A5F3 !important; }
+    .sudoku-cell.solver-cell-bkclr-6 { background: #F7A5A7 !important; }
+    .sudoku-cell.solver-cell-bkclr-7,
+    .sudoku-cell.solver-cell-bkclr-8 { background: #86F280 !important; }
+    .sudoku-cell.solver-cell-bkclr-9 { background: #FFFF00 !important; }
+    .sudoku-cell.solver-cell-bkclr-10 { background: #FFA500 !important; }
+    .sudoku-cell.solver-cell-bkclr-11 { background: #FF7684 !important; }
+    .sudoku-cell.solver-cell-bkclr-12 { background: #EB0000 !important; }
+    .sudoku-cell.hint-peer { background: #f8fafc; }
+    .cell-value {
+      font-family: Tahoma, Arial, sans-serif;
+      font-size: var(--yzf-value-font-size, clamp(22px, 60cqw, 42px));
+      font-weight: 400;
+      line-height: 1;
+    }
+    .cell-value.given { color: #000; }
+    .cell-value.solved { color: #00f; }
+    .cell-value.suggested { color: var(--place); }
+    .cell-value.focus {
+      position: relative;
+      color: #053b18;
+      font-weight: 800;
+      z-index: 0;
+    }
+    .cell-value.focus::before {
+      content: "";
+      position: absolute;
+      inset: 50%;
+      width: 1.35em;
+      height: 1.35em;
+      border-radius: 999px;
+      transform: translate(-50%, -50%);
+      background: #30d45f;
+      z-index: -1;
+    }
+    .candidate-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      width: 100%;
+      height: 100%;
+      padding: var(--yzf-candidate-grid-padding, 3px);
+      color: #464646;
+      font-family: Tahoma, Arial, sans-serif;
+      font-size: var(--yzf-candidate-font-size, clamp(8px, 30cqw, 14px));
+      font-weight: 400;
+      line-height: 1;
+      text-align: center;
+    }
+    .candidate {
+      position: relative;
+      display: grid;
+      place-items: center;
+      min-width: 0;
+      min-height: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+    }
+    .candidate.bkclr::before,
+    .candidate.link::before,
+    .candidate.als::before,
+    .candidate.ahs::before,
+    .candidate.aux::before,
+    .candidate.rcc::before,
+    .candidate.focus::before,
+    .candidate.remove::before,
+    .candidate.chain-remove::before,
+    .candidate.chain-start::before,
+    .candidate.chain-on::before,
+    .candidate.chain-off::before,
+    .candidate.chain-af-aux::before,
+    .candidate.chain-ur-body::before,
+    .candidate.manual-chain-start::before,
+    .candidate.manual-chain-pending::before,
+    .candidate.manual-chain-on::before,
+    .candidate.manual-chain-off::before,
+    .candidate.chain-als-1::before,
+    .candidate.chain-als-2::before,
+    .candidate.chain-als-3::before,
+    .candidate.chain-als-4::before,
+    .candidate.chain-als-5::before {
+      content: "";
+      position: absolute;
+      inset: 50%;
+      width: 1.45em;
+      height: 1.45em;
+      border-radius: 999px;
+      transform: translate(-50%, calc(-50% - 1.5cqw));
+      z-index: -1;
+    }
+
+    .candidate.bkclr {
+      color: var(--bkclr-text, #111827);
+      font-weight: 800;
+      text-decoration: none;
+    }
+    .candidate.bkclr::before {
+      background: var(--bkclr-bg, #30d45f);
+    }
+
+    .candidate.bkclr-1::before { background: #3FDA65 !important; }
+    .candidate.bkclr-2::before { background: #7FBBFF !important; }
+    .candidate.bkclr-3::before { background: #D8B2FF !important; }
+    .candidate.bkclr-4::before { background: #C5E88E !important; }
+    .candidate.bkclr-5::before { background: #FFCBCB !important; }
+    .candidate.bkclr-6::before { background: #B2DFDF !important; }
+    .candidate.bkclr-7::before { background: #FCDCA5 !important; }
+    .candidate.bkclr-8::before { background: #F7A5A7 !important; }
+    .candidate.bkclr-9::before { background: #FFFF00 !important; }
+    .candidate.bkclr-10::before { background: #FFA500 !important; }
+    .candidate.bkclr-11::before { background: #FF7684 !important; }
+    .candidate.bkclr-12::before { background: #EB0000 !important; }
+    /* V432: 13/14 are AF / EdoFin outline-only markers, not normal bkclr fills. */
+    .candidate.bkclr-13::before,
+    .candidate.bkclr-14::before { background: transparent !important; }
+    .candidate.remove {
+      color: #7a0012;
+      font-weight: 800;
+      text-decoration: none;
+    }
+    .candidate.remove::before {
+      background: #ff6b7f;
+    }
+    .candidate.chain-remove,
+    .candidate.chain-remove.chain-on,
+    .candidate.chain-remove.chain-off,
+    .candidate.chain-remove.chain-start {
+      color: #7a0012;
+      font-weight: 800;
+      text-decoration: none;
+    }
+    .candidate.chain-remove::before {
+      width: 30cqw;
+      height: 30cqw;
+      background: #ff6b7f;
+    }
+    .candidate.focus {
+      color: #053b18;
+      font-weight: 800;
+    }
+    .candidate.focus::before {
+      background: #30d45f;
+    }
+    .candidate.link {
+      color: #043c6f;
+      font-weight: 800;
+    }
+    .candidate.bkclr::before,
+    .candidate.link::before,
+    .candidate.ahs::before {
+      background: #7fc7ff;
+    }
+    .candidate.als {
+      color: #4a1d6f;
+      font-weight: 800;
+    }
+    .candidate.ahs {
+      color: #043c6f;
+      font-weight: 800;
+    }
+    .candidate.als::before {
+      background: #d7a7ff;
+    }
+    .candidate.rcc {
+      color: #4a1d6f;
+      font-weight: 800;
+    }
+    .candidate.rcc::before {
+      background: #d7a7ff;
+    }
+    .candidate.aux {
+      color: #7a0012;
+      font-weight: 800;
+    }
+    .candidate.aux::before {
+      background: #ffc8cf;
+    }
+    .candidate.chain-af-aux {
+      color: #7a0012;
+      font-weight: 800;
+      z-index: 1;
+    }
+    /* V432: AF / EdoFin uses an outline-only ellipse.  Do not use ::before for
+       the visible AF shape because the shared candidate ::before layer sits
+       behind the digit/background.  The visible border is drawn on ::after. */
+    .candidate.chain-af-aux::before {
+      background: transparent !important;
+      box-shadow: none !important;
+    }
+    .candidate.chain-af-aux::after {
+      content: "";
+      position: absolute;
+      inset: 50%;
+      width: 30cqw;
+      height: 30cqw;
+      border: 2px solid rgba(239, 68, 68, 0.86);
+      border-radius: 999px;
+      background: transparent !important;
+      box-shadow: none !important;
+      transform: translate(-50%, calc(-50% - 1.5cqw));
+      pointer-events: none;
+      z-index: 3;
+    }
+    /* color=13: horizontal AF / EdoFin ellipse, covering row direction. */
+    .candidate.chain-af-aux.chain-af-aux-cover-row::after {
+      width: 42cqw;
+      height: 24cqw;
+    }
+    /* color=14: vertical AF / EdoFin ellipse, covering column direction. */
+    .candidate.chain-af-aux.chain-af-aux-cover-col::after {
+      width: 24cqw;
+      height: 42cqw;
+    }
+    .candidate.chain-af-aux.chain-af-aux-cover-row.chain-af-aux-cover-col::after {
+      width: 42cqw;
+      height: 42cqw;
+    }
+    .candidate.chain-ur-body {
+      color: #4a1d6f;
+      font-weight: 800;
+    }
+    .candidate.chain-ur-body::before {
+      width: 32cqw;
+      height: 32cqw;
+      background: rgba(216, 180, 254, 0.72);
+      box-shadow: 0 0 0 1.5px rgba(126, 34, 206, 0.5);
+    }
+    .candidate.chain-als-1,
+    .candidate.chain-als-2,
+    .candidate.chain-als-3,
+    .candidate.chain-als-4,
+    .candidate.chain-als-5 {
+      color: #173018;
+      font-weight: 800;
+    }
+    .candidate.chain-als-1::before,
+    .candidate.chain-als-2::before,
+    .candidate.chain-als-3::before,
+    .candidate.chain-als-4::before,
+    .candidate.chain-als-5::before {
+      width: 30cqw;
+      height: 30cqw;
+    }
+    .candidate.chain-als-1::before { background: #c5e88e; }
+    .candidate.chain-als-2::before { background: #ffcbcb; }
+    .candidate.chain-als-3::before { background: #b2dfdf; }
+    .candidate.chain-als-4::before { background: #fcdca5; }
+    .candidate.chain-als-5::before { background: #f7a5a7; }
+    .candidate.chain-start {
+      color: #7c4a00;
+      font-weight: 800;
+    }
+    .candidate.chain-start::before {
+      width: 30cqw;
+      height: 30cqw;
+      background: #ffd64a;
+    }
+    .candidate.chain-on {
+      color: #053b18;
+      font-weight: 800;
+    }
+    .candidate.chain-on::before {
+      width: 30cqw;
+      height: 30cqw;
+      background: #30d45f;
+    }
+    .candidate.chain-off {
+      color: #043c6f;
+      font-weight: 800;
+    }
+    .candidate.chain-off::before {
+      width: 30cqw;
+      height: 30cqw;
+      background: #7fc7ff;
+    }
+    .candidate.manual-chain-start {
+      color: #7c4a00;
+      font-weight: 850;
+    }
+    .candidate.manual-chain-start::before {
+      width: 30cqw;
+      height: 30cqw;
+      background: #ffd64a;
+      box-shadow: 0 0 0 1.5px rgba(220, 38, 38, 0.38);
+    }
+    .candidate.manual-chain-pending {
+      color: #8a2600;
+      font-weight: 900;
+    }
+    .candidate.manual-chain-pending::before {
+      width: 34cqw;
+      height: 34cqw;
+      background: #ffd64a;
+      box-shadow:
+        0 0 0 2px rgba(220, 38, 38, 0.72),
+        0 0 0 5px rgba(248, 113, 113, 0.25);
+      animation: manual-chain-pending-pulse 1.05s ease-in-out infinite;
+    }
+    @keyframes manual-chain-pending-pulse {
+      0%, 100% { transform: translate(-50%, calc(-50% - 1.5cqw)) scale(1); opacity: 0.92; }
+      50% { transform: translate(-50%, calc(-50% - 1.5cqw)) scale(1.14); opacity: 0.72; }
+    }
+    .candidate.manual-chain-on {
+      color: #053b18;
+      font-weight: 850;
+    }
+    .candidate.manual-chain-on::before {
+      width: 30cqw;
+      height: 30cqw;
+      background: #30d45f;
+      box-shadow: 0 0 0 1.5px rgba(220, 38, 38, 0.28);
+    }
+    .candidate.manual-chain-off {
+      color: #043c6f;
+      font-weight: 850;
+    }
+    .candidate.manual-chain-off::before {
+      width: 30cqw;
+      height: 30cqw;
+      background: #7fc7ff;
+      box-shadow: 0 0 0 1.5px rgba(220, 38, 38, 0.28);
+    }
+
+    .candidate.manual-chain-start,
+    .candidate.manual-chain-pending,
+    .candidate.manual-chain-on,
+    .candidate.manual-chain-off {
+      position: relative;
+      z-index: 6;
+      text-shadow: 0 1px 0 rgba(255,255,255,0.9), 0 -1px 0 rgba(255,255,255,0.9), 1px 0 0 rgba(255,255,255,0.9), -1px 0 0 rgba(255,255,255,0.9);
+    }
+    .candidate.manual-chain-pending {
+      outline: max(1px, 0.12em) solid rgba(220, 38, 38, 0.9);
+      outline-offset: max(-2px, -0.16em);
+      border-radius: 999px;
+    }
+
+    .sudoku-cell.manual-cell-color {
+      background: color-mix(in srgb, var(--manual-cell-bg, #fff8a6) 46%, #fff) !important;
+    }
+    .candidate.manual-mark-color {
+      color: var(--manual-cand-text, #111827);
+      font-weight: 850;
+      background: color-mix(in srgb, var(--manual-cand-bg, #c5e88e) 70%, transparent);
+      border-radius: 999px;
+    }
+    .candidate.manual-circle {
+      color: var(--manual-circle-text, #0f172a);
+      font-weight: 850;
+      outline: max(1px, 0.13em) solid var(--manual-circle-color, #2563eb);
+      outline-offset: max(-3px, -0.23em);
+      border-radius: 999px;
+    }
+    .candidate.manual-block-node {
+      color: #0f172a;
+      font-weight: 850;
+      outline: max(1px, 0.14em) dashed var(--manual-block-color, #f97316);
+      outline-offset: max(-2px, -0.18em);
+      border-radius: 999px;
+    }
+    .candidate.manual-pre-elim,
+    .candidate.manual-elim {
+      color: #7a0012;
+      font-weight: 900;
+    }
+    .candidate.manual-pre-elim::before,
+    .candidate.manual-pre-elim::after,
+    .candidate.manual-elim::before,
+    .candidate.manual-elim::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 1.42em;
+      height: max(2px, 0.16em);
+      display: block;
+      border-radius: 999px;
+      transform-origin: center;
+      z-index: 35;
+      pointer-events: none;
+      filter: drop-shadow(0 1px 0 rgba(255,255,255,0.9))
+              drop-shadow(0 -1px 0 rgba(255,255,255,0.9))
+              drop-shadow(1px 0 0 rgba(255,255,255,0.9))
+              drop-shadow(-1px 0 0 rgba(255,255,255,0.9));
+    }
+    /* Form4-style deletion mark:
+       pre-elimination only = green full X;
+       elimination only     = red full X;
+       both marks           = green top-left -> bottom-right + red top-right -> bottom-left. */
+    .candidate.manual-pre-elim:not(.manual-elim)::before,
+    .candidate.manual-pre-elim:not(.manual-elim)::after {
+      background: #0f7a3b;
+    }
+    .candidate.manual-elim:not(.manual-pre-elim)::before,
+    .candidate.manual-elim:not(.manual-pre-elim)::after {
+      background: #b42318;
+    }
+    .candidate.manual-pre-elim:not(.manual-elim)::before,
+    .candidate.manual-elim:not(.manual-pre-elim)::before,
+    .candidate.manual-pre-elim.manual-elim::before {
+      transform: translate(-50%, -50%) rotate(45deg);
+    }
+    .candidate.manual-pre-elim:not(.manual-elim)::after,
+    .candidate.manual-elim:not(.manual-pre-elim)::after,
+    .candidate.manual-pre-elim.manual-elim::after {
+      transform: translate(-50%, -50%) rotate(-45deg);
+    }
+    .candidate.manual-pre-elim.manual-elim::before {
+      background: #0f7a3b;
+    }
+    .candidate.manual-pre-elim.manual-elim::after {
+      background: #b42318;
+    }
+    .manual-mark-overlay {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      overflow: visible;
+      z-index: 30;
+    }
+    .manual-mark-edge {
+      fill: none;
+      stroke: #dc2626;
+      stroke-width: 3.6;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      opacity: 0.96;
+      filter: drop-shadow(0 1px 1px rgba(255,255,255,0.85));
+    }
+    .manual-mark-edge.weak { stroke-dasharray: 8 6; opacity: 0.94; }
+    .manual-mark-edge.construction { stroke: #dc2626; }
+    .manual-mark-arrow-head { fill: #dc2626; }
+    .manual-mark-endpoint {
+      fill: #fff;
+      stroke: #dc2626;
+      stroke-width: 2.1;
+      opacity: 0.98;
+    }
+    .manual-block-mark {
+      fill-opacity: 0.14;
+      stroke-opacity: 0.82;
+      stroke-width: 2.8;
+      stroke-linejoin: round;
+      stroke-linecap: round;
+      pointer-events: none;
+      filter: drop-shadow(0 1px 0 rgba(255,255,255,0.78));
+    }
+    .manual-block-mark.draft {
+      fill-opacity: 0.10;
+      stroke-dasharray: 7 5;
+    }
+    .manual-block-mark.capsule {
+      fill: none;
+      stroke-width: 22;
+      stroke-opacity: 0.22;
+    }
+    .manual-mini-region {
+      fill: none;
+      stroke-width: 24;
+      stroke-linecap: round;
+      stroke-opacity: 0.24;
+      pointer-events: none;
+      filter: drop-shadow(0 1px 0 rgba(255,255,255,0.78));
+    }
+    .manual-marks-panel {
+      margin-top: 6px;
+      padding: 6px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #f8fafc;
+    }
+    .manual-marks-panel summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      color: #1e3a8a;
+      font-size: 13px;
+      font-weight: 750;
+    }
+    .manual-marks-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .manual-marks-grid label {
+      display: grid;
+      gap: 3px;
+      min-width: 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .manual-marks-grid select {
+      width: 100%;
+      min-width: 0;
+      height: 32px;
+      padding: 4px 7px;
+      font-size: 13px;
+    }
+    .manual-mark-actions,
+    .manual-mark-buttons {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .manual-mark-actions button,
+    .manual-mark-buttons button {
+      width: 100%;
+      margin: 0;
+      min-width: 0;
+    }
+    .manual-mark-cleaning {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 32px;
+      padding: 4px 2px;
+      font-size: 12px;
+      color: var(--text);
+      user-select: none;
+    }
+    .manual-mark-cleaning input {
+      width: 16px;
+      height: 16px;
+      margin: 0;
+    }
+    .manual-mark-actions button.active {
+      border-color: var(--accent);
+      background: #dbeafe;
+      color: #0f3f8f;
+      font-weight: 750;
+    }
+    .manual-mark-color-row {
+      display: grid;
+      grid-template-columns: auto 34px minmax(0, 1fr);
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .manual-mark-color-row input[type="color"] {
+      width: 34px;
+      height: 28px;
+      padding: 1px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: #fff;
+    }
+    .manual-mark-color-row button {
+      width: 100%;
+      margin: 0;
+      min-width: 0;
+      height: 28px;
+      padding: 3px 6px;
+      font-size: 12px;
+    }
+    .manual-mark-swatches {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(38px, 1fr));
+      gap: 6px;
+      align-items: center;
+      margin-top: 8px;
+    }
+    .manual-mark-swatch {
+      position: relative;
+      width: 100%;
+      min-width: 38px;
+      height: 38px;
+      min-height: 38px;
+      margin: 0;
+      padding: 0;
+      border-radius: 12px;
+      border: 1px solid transparent;
+      background: transparent;
+      box-shadow: none;
+      touch-action: manipulation;
+    }
+    .manual-mark-swatch::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 28px;
+      height: 28px;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      border: 1px solid rgba(15, 23, 42, 0.28);
+      background: var(--swatch-bg, #fff);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.45);
+    }
+    .manual-mark-swatch.active {
+      border-color: rgba(37, 99, 235, 0.55);
+      background: rgba(219, 234, 254, 0.82);
+      outline: none;
+    }
+    .manual-mark-swatch.active::after {
+      width: 30px;
+      height: 30px;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.45), 0 0 0 2px #111827;
+    }
+    .manual-mark-status {
+      min-height: 18px;
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+    }
+
+
+    body.manual-marks-focus .global-actions,
+    body.manual-marks-focus .tab-list,
+    body.manual-marks-focus #tabControls > :not(#numpad):not(#manualMarksPanel) {
+      display: none !important;
+    }
+    body.manual-marks-focus .tab-shell {
+      overflow: auto;
+    }
+    body.manual-marks-focus #tabControls {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-height: 0;
+      overflow: auto;
+      overscroll-behavior: contain;
+      padding-top: 0;
+    }
+    body.manual-marks-focus #manualMarksPanel {
+      order: 2;
+      margin-top: 0;
+    }
+    body.manual-marks-focus #numpad {
+      order: 1;
+      margin-bottom: 0;
+    }
+    body.manual-marks-focus #manualMarksPanel > summary {
+      cursor: default;
+    }
+
+    .hint-panel {
+      min-height: 30px;
+      margin-top: 6px;
+      padding: 6px 8px;
+      border-left: 4px solid var(--accent);
+      background: var(--panel);
+      color: #263348;
+      font-size: 14px;
+    }
+    .tab-shell {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      margin-top: 6px;
+      border-top: 1px solid var(--border);
+    }
+    .tab-list {
+      display: grid;
+      flex: 0 0 auto;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 4px;
+      padding-top: 6px;
+    }
+    .tab-button {
+      min-height: 34px;
+      margin: 0;
+      padding: 6px 8px;
+      border-radius: 6px 6px 0 0;
+      font-size: 14px;
+      font-weight: 650;
+    }
+    .tab-button.active {
+      border-color: var(--accent);
+      background: #dbeafe;
+      color: #0f3f8f;
+    }
+    .tab-panel {
+      min-height: 0;
+      padding-top: 6px;
+    }
+    #tabTechniques {
+      max-height: clamp(180px, calc(100dvh - 430px), 560px);
+      overflow: auto;
+      overscroll-behavior: contain;
+    }
+    .tab-panel[hidden] {
+      display: none;
+    }
+    .global-actions {
+      display: grid;
+      grid-template-columns: repeat(10, minmax(30px, 1fr));
+      gap: 4px;
+      flex: 0 0 auto;
+      margin: 0 0 6px;
+      padding: 0 0 6px;
+      border-bottom: 1px solid var(--border);
+    }
+    .global-actions .action-button {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-width: 0;
+      min-height: 32px;
+      margin: 0;
+      padding: 4px;
+      border-radius: 6px;
+      font-size: 16px;
+      line-height: 1;
+      background: #fff;
+      color: var(--ink);
+      border-color: var(--border);
+    }
+    .global-actions .action-button.primary {
+      background: #fff;
+      color: var(--ink);
+      border-color: var(--border);
+    }
+    .global-actions .action-button:hover,
+    .global-actions .action-button.primary:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: #fff;
+    }
+    .global-actions .action-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      color: inherit;
+    }
+    .global-actions .action-icon svg {
+      width: 18px;
+      height: 18px;
+      display: block;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      overflow: visible;
+    }
+    .global-actions .action-icon svg .icon-fill {
+      fill: currentColor;
+      stroke: none;
+    }
+    .global-actions .action-label {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+    .generate-options {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .generate-options select {
+      flex: 1;
+      min-width: 0;
+      height: 32px;
+      padding: 4px 8px;
+      font-size: 13px;
+    }
+    .training-select-line {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+    }
+    .training-text-filter-button {
+      position: relative;
+      height: 32px;
+      min-width: 72px;
+      margin: 0;
+      padding: 4px 9px;
+      border-radius: 8px;
+      white-space: nowrap;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .training-text-filter-button.active {
+      border-color: var(--accent);
+      background: #eff6ff;
+      color: var(--accent);
+      padding-right: 18px;
+    }
+    .training-text-filter-button.active::after {
+      content: "";
+      position: absolute;
+      top: 7px;
+      right: 7px;
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: #16a34a;
+      box-shadow: 0 0 0 2px #fff;
+    }
+    .numpad {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 6px;
+      margin-top: 6px;
+    }
+    .numpad button {
+      min-height: 38px;
+      margin: 0;
+      font-size: 18px;
+      font-weight: 650;
+      touch-action: manipulation;
+    }
+    .numpad.candidate-mode button {
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .numpad button.active {
+      border-color: var(--accent);
+      background: #dbeafe;
+      color: #0f3f8f;
+    }
+    .numpad .mode-toggle {
+      font-size: 14px;
+      font-weight: 700;
+    }
+    body.board-pointer-mouse:not(.mobile-solve-mode) #tabControls > #numpad,
+    body.board-pointer-mouse:not(.mobile-solve-mode) .manual-mark-touch-only {
+      display: none !important;
+    }
+    body.board-pointer-mouse:not(.mobile-solve-mode) .manual-mark-mode-control {
+      grid-column: 1 / -1;
+    }
+    .sudoku-cell.selected {
+      background: #dbeafe;
+      box-shadow: inset 0 0 0 3px #2563eb;
+    }
+    .input-panel {
+      margin-top: 6px;
+      padding: 6px;
+    }
+    .input-panel summary {
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .batch-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .batch-grid label {
+      display: grid;
+      gap: 3px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .batch-grid input, .batch-grid select, .batch-grid textarea {
+      min-width: 0;
+      height: 30px;
+      padding: 4px 7px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 13px;
+    }
+    .batch-grid textarea {
+      grid-column: 1 / -1;
+      min-height: 86px;
+      resize: vertical;
+      line-height: 1.35;
+    }
+    .batch-actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .batch-actions button {
+      margin: 0;
+      width: 100%;
+    }
+    .batch-status {
+      min-height: 18px;
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+    .technique-toolbar {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 6px;
+      margin: 2px 0 6px;
+    }
+    .technique-toolbar button {
+      margin: 0;
+      min-width: 0;
+      white-space: nowrap;
+    }
+    .technique-list {
+      display: block;
+    }
+    .technique-memory-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 7px 14px;
+      margin: 2px 0 7px;
+      padding: 7px;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      background: rgba(255, 255, 255, 0.72);
+      font-size: 12px;
+    }
+    .technique-memory-control,
+    .technique-option-check {
+      display: inline-flex;
+      min-width: 0;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .technique-memory-control {
+      flex: 1 1 370px;
+    }
+    .technique-memory-select {
+      min-width: 0;
+      max-width: 100%;
+      height: 30px;
+      padding: 3px 26px 3px 7px;
+      font-size: 12px;
+    }
+    .technique-option-check {
+      flex: 0 0 auto;
+      cursor: pointer;
+    }
+    .technique-option-check input {
+      margin: 0;
+    }
+    .technique-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0 3px;
+      font-size: 13px;
+    }
+    .technique-table th {
+      padding: 4px 7px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      text-align: left;
+    }
+    .technique-table th:last-child,
+    .technique-score-cell {
+      width: 64px;
+      text-align: right;
+    }
+    .technique-row td {
+      padding: 6px 7px;
+      border: 1px solid var(--border);
+      border-left-width: 0;
+      border-right-width: 0;
+      vertical-align: middle;
+    }
+    .technique-row td:first-child {
+      border-left-width: 1px;
+      border-radius: 6px 0 0 6px;
+    }
+    .technique-row td:last-child {
+      border-right-width: 1px;
+      border-radius: 0 6px 6px 0;
+      font-variant-numeric: tabular-nums;
+    }
+    .technique-row.disabled {
+      color: var(--muted);
+      opacity: 0.62;
+    }
+    .technique-name-cell {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+    .technique-name-cell input {
+      width: 16px;
+      height: 16px;
+      margin: 0;
+      flex: 0 0 auto;
+    }
+    .technique-name-cell span {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .technique-suboption {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-left: 24px;
+      margin-top: 4px;
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+    .technique-suboption input {
+      width: 14px;
+      height: 14px;
+      margin: 0;
+    }
+    details > summary {
+      cursor: pointer;
+      user-select: none;
+    }
+    details > summary::marker {
+      color: var(--accent);
+    }
+    /* V434: the visible heading moved into the topbar, so its legacy wrapper must
+       not remain as an auto-placed grid item. Otherwise it creates an implicit
+       fourth row and can push the centered board above the clipped panel. */
+    .board-heading-row,
+    .board-wrap h3,
+    .board-meta {
+      display: none !important;
+    }
+    @media (max-width: 900px) {
+      .app-shell {
+        padding: 4px;
+      }
+    }
+    @media (max-width: 520px) {
+      body {
+        background: #fff;
+      }
+      .app-shell {
+        width: 100%;
+        max-width: none;
+        padding: 0;
+      }
+  
+    .workspace {
+        width: 100%;
+        max-width: none;
+      }
+      .topbar {
+        padding: 0 0 3px;
+      }
+      .brand-subtitle {
+        display: none;
+      }
+      .card {
+        border-radius: 0;
+        box-shadow: none;
+      }
+      .board-wrap {
+        width: 100%;
+        border-left: 0;
+        border-right: 0;
+        padding: 4px;
+      }
+      .board-stage {
+        width: var(--yzf-board-size, calc(100vw - 8px));
+        max-width: calc(100vw - 8px);
+      }
+      .board-wrap h3 {
+        display: none;
+      }
+      .board-meta {
+        font-size: 12px;
+      }
+      .brand-title {
+        font-size: 15px;
+      }
+      .topbar select {
+        height: 28px;
+        padding: 3px 7px;
+        font-size: 12px;
+      }
+      .global-actions {
+        grid-template-columns: repeat(10, minmax(27px, 1fr));
+        gap: 3px;
+        margin-bottom: 4px;
+        padding-bottom: 4px;
+      }
+      .global-actions .action-button {
+        min-height: 29px;
+        padding: 3px;
+        font-size: 14px;
+      }
+      .technique-list {
+        font-size: 12px;
+      }
+      .technique-memory-row {
+        gap: 6px 10px;
+        padding: 6px;
+        font-size: 11px;
+      }
+      .technique-memory-control {
+        flex-basis: 310px;
+      }
+      .technique-memory-select {
+        height: 28px;
+        font-size: 11px;
+      }
+      .technique-table {
+        font-size: 12px;
+      }
+      .technique-row td {
+        padding: 5px 6px;
+      }
+      .generate-options {
+        margin-top: 4px;
+        font-size: 12px;
+      }
+      .generate-options select {
+        height: 30px;
+        font-size: 12px;
+      }
+      button.compact {
+        min-height: 32px;
+        padding: 5px 4px;
+        font-size: 12px;
+      }
+      .numpad {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 4px;
+      }
+      .numpad button {
+        min-height: 34px;
+        font-size: 16px;
+      }
+  
+
+    .hint-panel {
+        font-size: 12px;
+        line-height: 1.35;
+        padding: 5px 6px;
+        margin-top: 4px;
+      }
+      .cell-value {
+        font-size: clamp(20px, 60cqw, 38px);
+      }
+      .candidate-grid {
+        font-size: clamp(7px, 30cqw, 12px);
+      }
+      .input-panel {
+        margin-top: 6px;
+      }
+      .json-treeview {
+        max-height: 260px;
+      }
+    }
+    @media (orientation: landscape) and (min-width: 700px) {
+      .app-shell,
+      .workspace {
+        max-width: none;
+      }
+      .board-wrap {
+        display: grid;
+        grid-template-columns: minmax(0, var(--yzf-board-size, min(58vw, calc(100dvh - 16px)))) minmax(280px, 1fr);
+        grid-template-rows: auto auto minmax(0, 1fr);
+        grid-template-areas:
+          "board topbar"
+          "board hint"
+          "board tools";
+        align-items: stretch;
+        column-gap: 10px;
+        min-height: calc(100dvh - 12px);
+      }
+      .topbar {
+        grid-area: topbar;
+        justify-content: flex-end;
+        padding: 0 0 4px;
+      }
+      .board-stage {
+        grid-area: board;
+        align-self: center;
+        justify-self: center;
+        width: var(--yzf-board-size, min(calc(100dvh - 16px), 58vw, 700px));
+        max-width: none;
+      }
+  
+
+    .hint-panel {
+        grid-area: hint;
+        margin: 0 0 6px;
+      }
+      .tab-shell {
+        grid-area: tools;
+        height: 100%;
+        min-height: 0;
+        max-height: calc(100dvh - 54px);
+        margin-top: 0;
+        border-top: 0;
+        border-left: 1px solid var(--border);
+        padding-left: 10px;
+        overflow: hidden;
+      }
+      .tab-panel {
+        flex: 1 1 auto;
+        overflow: auto;
+        overscroll-behavior: contain;
+      }
+      #tabTechniques {
+        max-height: none;
+      }
+      .json-treeview {
+        max-height: calc(100vh - 96px);
+      }
+    }
+    /* frontfix-20260502: compact mobile landscape layout.
+       Board stays alone on the left; title, hint, controls, techniques and path stay on the right. */
+    @media (orientation: landscape) and (max-height: 640px) and (max-width: 1180px) {
+      body {
+        background: #fff;
+        overflow: hidden;
+      }
+      .app-shell {
+        width: 100vw;
+        max-width: none;
+        height: 100dvh;
+        padding: 0;
+        overflow: hidden;
+        background: #fff;
+      }
+  
+    .workspace {
+        width: 100vw;
+        max-width: none;
+        height: 100dvh;
+        margin: 0;
+      }
+      .board-wrap {
+        display: grid;
+        width: 100vw;
+        height: 100dvh;
+        min-height: 0;
+        padding: max(4px, env(safe-area-inset-top)) max(4px, env(safe-area-inset-right)) max(4px, env(safe-area-inset-bottom)) max(4px, env(safe-area-inset-left));
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+        grid-template-columns: minmax(0, var(--yzf-board-size, min(58vw, calc(100dvh - 8px)))) minmax(220px, 1fr);
+        grid-template-rows: auto auto minmax(0, 1fr);
+        grid-template-areas:
+          "board topbar"
+          "board hint"
+          "board tools";
+        align-items: stretch;
+        column-gap: 6px;
+        overflow: hidden;
+      }
+      .topbar {
+        grid-area: topbar;
+        display: flex !important;
+        min-height: 0;
+        padding: 0 0 4px;
+        align-items: center;
+      }
+      .brand-title {
+        font-size: 13px;
+        line-height: 1.1;
+      }
+      .brand-subtitle,
+      .board-wrap h3,
+      .board-meta {
+        display: none !important;
+      }
+      .topbar select {
+        height: 26px;
+        padding: 2px 6px;
+        font-size: 11px;
+      }
+      .board-stage {
+        grid-area: board;
+        align-self: center;
+        justify-self: center;
+        width: var(--yzf-board-size, min(calc(58vw - 6px), calc(100dvh - 8px)));
+        max-width: none;
+        margin: 0;
+      }
+      .cell-value {
+        font-size: clamp(20px, 60cqw, 38px);
+      }
+      .candidate-grid {
+        padding: clamp(1px, 5cqw, 3px);
+        font-size: clamp(7px, 24cqw, 13px);
+      }
+  
+
+    .hint-panel {
+        grid-area: hint;
+        min-height: 0;
+        max-height: 58px;
+        margin: 0 0 4px;
+        padding: 4px 6px;
+        overflow: auto;
+        font-size: 11px;
+        line-height: 1.25;
+      }
+      .tab-shell {
+        grid-area: tools;
+        height: 100%;
+        min-height: 0;
+        max-height: none;
+        margin: 0;
+        padding: 0 0 0 8px;
+        overflow: hidden;
+        border-top: 0;
+        border-left: 1px solid var(--border);
+      }
+      .tab-list {
+        gap: 3px;
+        padding-top: 0;
+      }
+      .tab-button {
+        min-height: 26px;
+        padding: 3px 5px;
+        font-size: 11px;
+      }
+      .tab-panel {
+        flex: 1 1 auto;
+        overflow: auto;
+        overscroll-behavior: contain;
+        padding-top: 4px;
+      }
+      #tabTechniques {
+        max-height: none;
+      }
+      .generate-options {
+        margin-top: 0;
+        font-size: 10px;
+      }
+      .generate-options select {
+        height: 26px;
+        padding: 2px 5px;
+        font-size: 10px;
+      }
+      .global-actions {
+        grid-template-columns: repeat(10, minmax(24px, 1fr));
+        gap: 3px;
+        margin: 0 0 4px;
+        padding-bottom: 4px;
+      }
+      .global-actions .action-button {
+        min-height: 26px;
+        padding: 2px;
+        font-size: 13px;
+      }
+      button.compact {
+        min-height: 26px;
+        padding: 3px;
+        font-size: 10px;
+      }
+      .numpad {
+        gap: 3px;
+        margin-top: 4px;
+      }
+      .numpad button {
+        min-height: 28px;
+        font-size: 13px;
+      }
+      .input-panel {
+        margin-top: 4px;
+        padding: 3px;
+      }
+      .input-panel summary {
+        font-size: 10px;
+      }
+      .technique-toolbar {
+        gap: 3px;
+        margin-bottom: 4px;
+      }
+      .technique-list,
+      .technique-table {
+        font-size: 10px;
+      }
+      .technique-row td {
+        padding: 3px 5px;
+      }
+      .json-treeview {
+        max-height: calc(100dvh - 78px);
+      }
+    }
+
+    @media (orientation: landscape) and (max-height: 640px) {
+      :fullscreen .app-shell,
+      :-webkit-full-screen .app-shell {
+        width: 100vw;
+        max-width: none;
+        height: 100dvh;
+        padding: 0;
+        overflow: hidden;
+        background: #fff;
+      }
+      :fullscreen .workspace,
+      :-webkit-full-screen .workspace {
+        width: 100vw;
+        max-width: none;
+        height: 100dvh;
+        margin: 0;
+      }
+      :fullscreen .board-wrap,
+      :-webkit-full-screen .board-wrap {
+        display: grid;
+        width: 100vw;
+        height: 100dvh;
+        min-height: 0;
+        padding: max(4px, env(safe-area-inset-top)) max(4px, env(safe-area-inset-right)) max(4px, env(safe-area-inset-bottom)) max(4px, env(safe-area-inset-left));
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+        grid-template-columns: minmax(0, var(--yzf-board-size, min(58vw, calc(100dvh - 8px)))) minmax(220px, 1fr);
+        grid-template-rows: auto auto minmax(0, 1fr);
+        grid-template-areas:
+          "board topbar"
+          "board hint"
+          "board tools";
+        align-items: stretch;
+        column-gap: 8px;
+        overflow: hidden;
+      }
+      :fullscreen .topbar,
+      :-webkit-full-screen .topbar {
+        grid-area: topbar;
+        display: flex !important;
+        min-height: 0;
+        padding: 0 0 4px;
+        align-items: center;
+      }
+      :fullscreen .brand-title,
+      :-webkit-full-screen .brand-title {
+        font-size: 13px;
+        line-height: 1.1;
+      }
+      :fullscreen .brand-subtitle,
+      :fullscreen .board-wrap h3,
+      :fullscreen .board-meta,
+      :-webkit-full-screen .brand-subtitle,
+      :-webkit-full-screen .board-wrap h3,
+      :-webkit-full-screen .board-meta {
+        display: none !important;
+      }
+      :fullscreen .topbar select,
+      :-webkit-full-screen .topbar select {
+        height: 26px;
+        padding: 2px 6px;
+        font-size: 11px;
+      }
+      :fullscreen .board-stage,
+      :-webkit-full-screen .board-stage {
+        grid-area: board;
+        align-self: center;
+        justify-self: center;
+        width: var(--yzf-board-size, min(calc(58vw - 6px), calc(100dvh - 8px)));
+        max-width: none;
+        margin: 0;
+      }
+      :fullscreen .cell-value,
+      :-webkit-full-screen .cell-value {
+        font-size: clamp(20px, 60cqw, 38px);
+      }
+      :fullscreen .candidate-grid,
+      :-webkit-full-screen .candidate-grid {
+        padding: clamp(1px, 5cqw, 3px);
+        font-size: clamp(7px, 24cqw, 13px);
+      }
+      :fullscreen .hint-panel,
+      :-webkit-full-screen .hint-panel {
+        grid-area: hint;
+        min-height: 0;
+        max-height: 58px;
+        margin: 0 0 4px;
+        padding: 4px 6px;
+        overflow: auto;
+        font-size: 11px;
+        line-height: 1.25;
+      }
+      :fullscreen .tab-shell,
+      :-webkit-full-screen .tab-shell {
+        grid-area: tools;
+        height: 100%;
+        min-height: 0;
+        max-height: none;
+        margin: 0;
+        padding: 0 0 0 8px;
+        overflow: hidden;
+        border-top: 0;
+        border-left: 1px solid var(--border);
+      }
+      :fullscreen .tab-list,
+      :-webkit-full-screen .tab-list {
+        gap: 3px;
+        padding-top: 0;
+      }
+      :fullscreen .tab-button,
+      :-webkit-full-screen .tab-button {
+        min-height: 26px;
+        padding: 3px 5px;
+        font-size: 11px;
+      }
+      :fullscreen .tab-panel,
+      :-webkit-full-screen .tab-panel {
+        flex: 1 1 auto;
+        overflow: auto;
+        overscroll-behavior: contain;
+        padding-top: 4px;
+      }
+      :fullscreen #tabTechniques,
+      :-webkit-full-screen #tabTechniques {
+        max-height: none;
+      }
+      :fullscreen .generate-options,
+      :-webkit-full-screen .generate-options {
+        margin-top: 0;
+        font-size: 10px;
+      }
+      :fullscreen .generate-options select,
+      :-webkit-full-screen .generate-options select {
+        height: 26px;
+        padding: 2px 5px;
+        font-size: 10px;
+      }
+      :fullscreen .global-actions,
+      :-webkit-full-screen .global-actions {
+        grid-template-columns: repeat(10, minmax(24px, 1fr));
+        gap: 3px;
+        margin: 0 0 4px;
+        padding-bottom: 4px;
+      }
+      :fullscreen .global-actions .action-button,
+      :-webkit-full-screen .global-actions .action-button {
+        min-height: 26px;
+        padding: 2px;
+        font-size: 13px;
+      }
+      :fullscreen button.compact,
+      :-webkit-full-screen button.compact {
+        min-height: 26px;
+        padding: 3px;
+        font-size: 10px;
+      }
+      :fullscreen .numpad,
+      :-webkit-full-screen .numpad {
+        gap: 3px;
+        margin-top: 4px;
+      }
+      :fullscreen .numpad button,
+      :-webkit-full-screen .numpad button {
+        min-height: 28px;
+        font-size: 13px;
+      }
+      :fullscreen .input-panel,
+      :-webkit-full-screen .input-panel {
+        margin-top: 4px;
+        padding: 3px;
+      }
+      :fullscreen .input-panel summary,
+      :-webkit-full-screen .input-panel summary {
+        font-size: 10px;
+      }
+      :fullscreen .technique-toolbar,
+      :-webkit-full-screen .technique-toolbar {
+        gap: 3px;
+        margin-bottom: 4px;
+      }
+      :fullscreen .technique-list,
+      :fullscreen .technique-table,
+      :-webkit-full-screen .technique-list,
+      :-webkit-full-screen .technique-table {
+        font-size: 10px;
+      }
+      :fullscreen .technique-row td,
+      :-webkit-full-screen .technique-row td {
+        padding: 3px 5px;
+      }
+      :fullscreen .json-treeview,
+      :-webkit-full-screen .json-treeview {
+        max-height: calc(100dvh - 78px);
+      }
+    }
+
+  
+
+    /* v420: keep the information display area stable. Long hint text scrolls inside
+       the panel instead of expanding the layout and changing the dynamic board size. */
+    :root {
+      --yzf-hint-panel-max-height: 96px;
+      --yzf-hint-panel-landscape-height: 74px;
+      --yzf-hint-panel-compact-height: 58px;
+    }
+    .hint-panel {
+      box-sizing: border-box;
+      flex: 0 0 auto;
+      min-height: 36px;
+      max-height: var(--yzf-hint-panel-max-height);
+      overflow-y: auto;
+      overflow-x: hidden;
+      overscroll-behavior: contain;
+      scrollbar-gutter: stable;
+      white-space: pre-wrap;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+    }
+    body.manual-marks-focus .hint-panel {
+      max-height: 64px;
+    }
+
+    .step-explain-panel {
+      margin-top: 8px;
+      padding: 10px 12px;
+      border: 1px solid rgba(148, 163, 184, 0.32);
+      border-radius: 12px;
+      background: rgba(15, 23, 42, 0.045);
+      color: var(--text);
+      font-size: 13px;
+      line-height: 1.55;
+      max-height: 240px;
+      overflow: auto;
+    }
+    .step-explain-panel.hidden { display: none; }
+    .step-explain-panel .step-explain-title {
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+    .step-explain-panel .step-explain-subtitle {
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 8px;
+    }
+    .step-explain-panel ol,
+    .step-explain-panel ul {
+      margin: 6px 0 0 1.2em;
+      padding: 0;
+    }
+    .step-explain-panel li { margin: 4px 0; }
+    .step-explain-panel .step-explain-proof {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px dashed rgba(148, 163, 184, 0.38);
+    }
+    .step-explain-panel .step-explain-sections,
+    .step-explain-dialog-content .step-explain-sections {
+      display: grid;
+      gap: 8px;
+    }
+    .step-explain-panel .step-explain-section,
+    .step-explain-dialog-content .step-explain-section {
+      padding: 8px 10px;
+      border: 1px solid rgba(148, 163, 184, 0.28);
+      border-radius: 9px;
+      background: rgba(255, 255, 255, 0.48);
+    }
+    .step-explain-panel .step-explain-section-heading,
+    .step-explain-dialog-content .step-explain-section-heading {
+      margin-bottom: 3px;
+      color: #334155;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+    }
+    .step-explain-panel .step-explain-section-body,
+    .step-explain-dialog-content .step-explain-section-body {
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+    .step-explain-panel .step-explain-section-conclusion,
+    .step-explain-dialog-content .step-explain-section-conclusion {
+      border-color: rgba(20, 102, 204, 0.28);
+      background: rgba(20, 102, 204, 0.055);
+    }
+    .step-explain-panel .step-explain-eureka,
+    .step-explain-dialog-content .step-explain-eureka {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      line-height: 1.55;
+    }
+    .step-explain-panel .step-explain-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .step-explain-panel .step-explain-pill {
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 12px;
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.42);
+    }
+    @media (orientation: landscape) and (max-height: 640px) {
+      .step-explain-panel { max-height: 120px; font-size: 12px; }
+    }
+
+    @media (orientation: portrait), (max-width: 699px) {
+      .hint-panel {
+        max-height: 84px;
+      }
+      body.manual-marks-focus .hint-panel {
+        max-height: 56px;
+      }
+    }
+    @media (orientation: landscape) and (min-width: 700px) {
+      .board-wrap {
+        grid-template-rows: auto var(--yzf-hint-panel-landscape-height) minmax(0, 1fr) !important;
+      }
+      .hint-panel {
+        height: var(--yzf-hint-panel-landscape-height);
+        min-height: 0;
+        max-height: var(--yzf-hint-panel-landscape-height);
+        margin-bottom: 6px;
+      }
+    }
+    @media (orientation: landscape) and (max-height: 640px) {
+      .board-wrap,
+      :fullscreen .board-wrap,
+      :-webkit-full-screen .board-wrap {
+        grid-template-rows: auto var(--yzf-hint-panel-compact-height) minmax(0, 1fr) !important;
+      }
+      .hint-panel,
+      :fullscreen .hint-panel,
+      :-webkit-full-screen .hint-panel {
+        height: var(--yzf-hint-panel-compact-height);
+        min-height: 0;
+        max-height: var(--yzf-hint-panel-compact-height);
+        overflow-y: auto;
+      }
+    }
+
+
+    /* V422: keep the hint/status panel fixed to exactly three text lines.
+       Long text scrolls inside the panel and must never resize the Sudoku board. */
+    :root {
+      --yzf-hint-line-height: 18px;
+      --yzf-hint-panel-height: 66px;
+    }
+    .hint-panel,
+    body.manual-marks-focus .hint-panel,
+    :fullscreen .hint-panel,
+    :-webkit-full-screen .hint-panel {
+      height: var(--yzf-hint-panel-height) !important;
+      min-height: var(--yzf-hint-panel-height) !important;
+      max-height: var(--yzf-hint-panel-height) !important;
+      line-height: var(--yzf-hint-line-height) !important;
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+      resize: none !important;
+      box-sizing: border-box !important;
+    }
+    @media (orientation: landscape) and (min-width: 700px) {
+      .board-wrap,
+      :fullscreen .board-wrap,
+      :-webkit-full-screen .board-wrap {
+        grid-template-rows: auto var(--yzf-hint-panel-height) minmax(0, 1fr) !important;
+      }
+    }
+    .manual-mark-cleaning {
+      display: flex !important;
+      grid-column: 1 / -1;
+      align-items: center;
+      gap: 8px;
+      min-height: 34px;
+      padding: 4px 2px;
+      white-space: normal;
+      line-height: 1.25;
+    }
+    .manual-mark-cleaning input {
+      flex: 0 0 auto;
+      width: 18px !important;
+      height: 18px !important;
+    }
+
+
+    /* V425: hard-lock the board panel position. The board owns the left panel in
+       desktop landscape and must not vertically recenter when right-side content
+       changes after Generate / Auto Solve / step rendering. */
+    @media (orientation: landscape) and (min-width: 700px) {
+      html,
+      body {
+        height: 100%;
+        overflow: hidden !important;
+      }
+      .app-shell {
+        height: 100dvh !important;
+        max-height: 100dvh !important;
+        overflow: hidden !important;
+      }
+  
+    .workspace {
+        height: calc(100dvh - 12px) !important;
+        max-height: calc(100dvh - 12px) !important;
+        overflow: hidden !important;
+      }
+      .board-wrap {
+        height: calc(100dvh - 12px) !important;
+        min-height: 0 !important;
+        max-height: calc(100dvh - 12px) !important;
+        overflow: hidden !important;
+        grid-template-rows: 32px var(--yzf-hint-panel-height) minmax(0, 1fr) !important;
+        align-items: stretch !important;
+      }
+      .topbar {
+        height: 32px !important;
+        min-height: 32px !important;
+        max-height: 32px !important;
+        overflow: hidden !important;
+      }
+      .board-stage {
+        align-self: center !important;
+        justify-self: center !important;
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+        transform: translateZ(0);
+      }
+      .tab-shell {
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        overflow: hidden !important;
+      }
+    }
+
+    @media (orientation: landscape) and (max-height: 640px) and (max-width: 1180px) {
+      .app-shell,
+      .workspace,
+      .board-wrap {
+        height: 100dvh !important;
+        min-height: 0 !important;
+        max-height: 100dvh !important;
+        overflow: hidden !important;
+      }
+      .board-wrap,
+      :fullscreen .board-wrap,
+      :-webkit-full-screen .board-wrap {
+        grid-template-rows: 28px var(--yzf-hint-panel-height) minmax(0, 1fr) !important;
+      }
+      .topbar,
+      :fullscreen .topbar,
+      :-webkit-full-screen .topbar {
+        height: 28px !important;
+        min-height: 28px !important;
+        max-height: 28px !important;
+        overflow: hidden !important;
+      }
+      .board-stage,
+      :fullscreen .board-stage,
+      :-webkit-full-screen .board-stage {
+        align-self: center !important;
+        justify-self: center !important;
+        margin: 0 !important;
+        transform: translateZ(0);
+      }
+    }
+
+
+    @media (orientation: portrait), (max-width: 699px) {
+      .board-stage {
+        flex: 0 0 auto !important;
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+      }
+      .hint-panel {
+        flex: 0 0 var(--yzf-hint-panel-height) !important;
+      }
+    }
+
+
+    /* V441: step tutorial is opt-in. Keep the board size stable; place the
+       Explain button next to Manual/Techniques in the topbar and enable it only
+       when a current step result is available. */
+    .board-heading-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 28px;
+    }
+    .board-heading-row h3 {
+      margin: 0;
+    }
+    .step-explain-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 30px;
+      margin: 0;
+      padding: 4px 9px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 650;
+      line-height: 1.2;
+      text-decoration: none;
+      white-space: nowrap;
+      cursor: pointer;
+      font-family: inherit;
+      vertical-align: middle;
+    }
+    .step-explain-button:hover:not(:disabled),
+    .step-explain-button:focus:not(:disabled) {
+      border-color: var(--accent);
+      background: #eff6ff;
+      outline: none;
+    }
+    .step-explain-button.hidden { display: inline-flex; }
+    .step-explain-button:disabled {
+      opacity: 0.46;
+      cursor: not-allowed;
+      color: var(--muted);
+      background: #f8fafc;
+    }
+    .step-explain-dialog {
+      position: fixed;
+      top: 8px;
+      left: auto;
+      right: 8px;
+      width: min(440px, calc(100vw - 16px));
+      height: calc(100dvh - 16px);
+      max-width: none;
+      max-height: none;
+      margin: 0;
+      transform: none;
+      border: 1px solid rgba(148, 163, 184, 0.55);
+      border-radius: 14px;
+      padding: 0;
+      background: var(--panel);
+      color: var(--ink);
+      box-shadow: 0 18px 54px rgba(15, 23, 42, 0.28);
+      overflow: hidden;
+      z-index: 1400;
+    }
+    .step-explain-dialog[open] {
+      display: flex;
+      flex-direction: column;
+    }
+    .step-explain-dialog::backdrop { background: transparent; }
+    .step-explain-dialog.hidden { display: none; }
+    .step-explain-dialog-header {
+      display: flex;
+      flex: 0 0 auto;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      min-height: 46px;
+      padding: 10px 12px 10px 14px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.32);
+      background: color-mix(in srgb, var(--panel) 94%, #eaf1ff 6%);
+      user-select: text;
+    }
+    .step-explain-dialog-header strong {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 14px;
+    }
+    .step-explain-dialog-close {
+      flex: 0 0 auto;
+      margin: 0;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      border-radius: 999px;
+      padding: 4px 10px;
+      background: rgba(255, 255, 255, 0.78);
+      color: var(--ink);
+      cursor: pointer;
+    }
+    .step-explain-dialog-content {
+      flex: 1 1 auto;
+      min-height: 0;
+      padding: 12px 14px 18px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      overscroll-behavior: contain;
+      scrollbar-gutter: stable;
+      font-size: 13px;
+      line-height: 1.62;
+    }
+    .step-explain-dialog-content ol,
+    .step-explain-dialog-content ul {
+      margin: 8px 0 0 1.2em;
+      padding: 0;
+    }
+    .step-explain-dialog-content li { margin: 5px 0; }
+    .step-tutorial-group + .step-tutorial-group {
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 2px solid rgba(148, 163, 184, 0.28);
+    }
+    .step-tutorial-group-title {
+      margin: 0 0 8px;
+      color: var(--ink);
+      font-size: 14px;
+      font-weight: 850;
+    }
+    .step-tutorial-guide .step-explain-section {
+      border-left: 3px solid rgba(29, 78, 216, 0.38);
+    }
+    .step-tutorial-current .step-explain-section {
+      border-left: 3px solid rgba(5, 150, 105, 0.38);
+    }
+    .step-explain-section-math {
+      background: rgba(15, 118, 110, 0.05) !important;
+    }
+    .step-explain-details {
+      margin-top: 8px;
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      border-radius: 9px;
+      background: rgba(255, 255, 255, 0.42);
+    }
+    .step-explain-details > summary {
+      padding: 7px 9px;
+      color: #334155;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .step-explain-details > :not(summary) {
+      margin: 0;
+      padding: 0 10px 10px;
+    }
+    .step-explain-dialog-content .step-explain-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .step-explain-dialog-content .step-explain-pill {
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 12px;
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.48);
+    }
+    @media (max-width: 699px) {
+      .step-explain-dialog {
+        border-radius: 12px;
+      }
+      .step-explain-dialog-header {
+        min-height: 42px;
+        padding: 8px 10px 8px 12px;
+      }
+      .step-explain-dialog-content {
+        padding: 10px 11px 16px;
+        font-size: 12.5px;
+      }
+    }
+
+    .training-text-filter-dialog {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      width: min(560px, calc(100vw - 24px));
+      max-height: min(82vh, 720px);
+      margin: 0;
+      transform: translate(-50%, -50%);
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      border-radius: 15px;
+      padding: 0;
+      background: var(--panel);
+      color: var(--ink);
+      box-shadow: 0 24px 80px rgba(15, 23, 42, 0.32);
+    }
+    .training-text-filter-dialog::backdrop {
+      background: rgba(15, 23, 42, 0.42);
+      backdrop-filter: blur(2px);
+    }
+    .training-text-filter-panel {
+      display: grid;
+      gap: 12px;
+      margin: 0;
+      padding: 0 16px 16px;
+      overflow: auto;
+      max-height: min(82vh, 720px);
+    }
+    .training-text-filter-header {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 0 -16px;
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.32);
+      background: var(--panel);
+    }
+    .training-text-filter-header strong { font-size: 15px; }
+    .training-text-filter-close {
+      width: 30px;
+      height: 30px;
+      margin: 0;
+      padding: 0;
+      border-radius: 999px;
+      font-size: 18px;
+      line-height: 1;
+    }
+    .training-text-filter-intro {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+    .training-text-filter-field {
+      display: grid;
+      gap: 6px;
+      color: #334155;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .training-text-filter-field textarea {
+      width: 100%;
+      min-height: 92px;
+      margin: 0;
+      resize: vertical;
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+    .training-text-filter-field small {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 500;
+    }
+    .training-text-filter-case {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #475569;
+      font-size: 12px;
+    }
+    .training-text-filter-case input { margin: 0; }
+    .training-text-filter-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-top: 2px;
+    }
+    .training-text-filter-actions button { margin: 0; }
+    .training-text-filter-spacer { flex: 1; }
+
+
+    /* V436: visual and usability refresh. This block intentionally lives last so
+       it can refine the long-lived responsive rules without changing JS behavior. */
+    :root {
+      --bg: #eaf0f8;
+      --surface: #ffffff;
+      --surface-soft: #f7f9fc;
+      --surface-muted: #eef3f9;
+      --border: #d7e0ec;
+      --border-strong: #bdcadb;
+      --muted: #64748b;
+      --ink: #172033;
+      --accent: #2563eb;
+      --accent-strong: #1d4ed8;
+      --accent-soft: #eaf2ff;
+      --accent-faint: #f5f8ff;
+      --place: #07805a;
+      --delete: #c2413a;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
+      --shadow-md: 0 10px 30px rgba(38, 55, 84, 0.10);
+      --shadow-board: 0 14px 34px rgba(24, 39, 69, 0.16), 0 2px 6px rgba(15, 23, 42, 0.10);
+      color-scheme: light;
+    }
+
+    body {
+      background:
+        radial-gradient(circle at 15% 10%, rgba(59, 130, 246, 0.10), transparent 32rem),
+        linear-gradient(145deg, #f2f6fb 0%, var(--bg) 52%, #e6edf6 100%);
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    button,
+    select,
+    textarea,
+    input {
+      font: inherit;
+    }
+    button,
+    select,
+    input[type="text"],
+    input[type="number"],
+    input[type="search"],
+    textarea {
+      border-color: var(--border);
+      transition: border-color 140ms ease, box-shadow 140ms ease, background-color 140ms ease, color 140ms ease, transform 80ms ease;
+    }
+    button:hover:not(:disabled) {
+      border-color: #9dbcf3;
+      color: var(--accent-strong);
+      background: var(--accent-faint);
+    }
+    button:active:not(:disabled) {
+      transform: translateY(1px);
+    }
+    button:focus-visible,
+    select:focus-visible,
+    input:focus-visible,
+    textarea:focus-visible,
+    summary:focus-visible,
+    a:focus-visible {
+      outline: 3px solid rgba(37, 99, 235, 0.22);
+      outline-offset: 2px;
+      border-color: var(--accent) !important;
+    }
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.48;
+      filter: grayscale(0.15);
+    }
+    button.primary {
+      border-color: var(--accent);
+      background: linear-gradient(180deg, #3478f6, var(--accent));
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.20);
+    }
+    button.primary:hover:not(:disabled) {
+      border-color: var(--accent-strong);
+      background: linear-gradient(180deg, #2f70e8, var(--accent-strong));
+      color: #fff;
+    }
+
+    .card {
+      border-color: rgba(189, 202, 219, 0.78);
+      box-shadow: var(--shadow-md);
+    }
+
+    .board-stage {
+      filter: none;
+    }
+    .sudoku-board {
+      border-width: 3px;
+      border-color: #000;
+      background: #000;
+      box-shadow: none;
+    }
+    .sudoku-cell {
+      border-color: #646464;
+    }
+    .sudoku-cell.box-right { border-right-color: #000; }
+    .sudoku-cell.box-bottom { border-bottom-color: #000; }
+    .sudoku-cell.selected {
+      background: #dceafe;
+      box-shadow: inset 0 0 0 3px #3478f6;
+    }
+
+    .topbar {
+      gap: 7px;
+      padding: 6px 10px !important;
+      border: 1px solid rgba(189, 202, 219, 0.78);
+      border-radius: var(--radius-md);
+      background: rgba(255, 255, 255, 0.94);
+      box-shadow: var(--shadow-sm);
+      backdrop-filter: blur(8px);
+      overflow: visible !important;
+    }
+    .brand {
+      align-items: flex-start;
+      margin-right: auto;
+      flex-direction: column;
+      gap: 1px;
+    }
+    .brand-title {
+      color: #12213b;
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: 0.01em;
+    }
+    .brand-subtitle {
+      display: block;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 550;
+      line-height: 1.1;
+      white-space: nowrap;
+    }
+    .manual-link,
+    .step-explain-button,
+    .topbar select {
+      min-height: 30px;
+      border-color: var(--border);
+      border-radius: 9px;
+      background: var(--surface-soft);
+      font-size: 12px;
+      font-weight: 650;
+      box-shadow: none;
+    }
+    .manual-link {
+      color: #36557f;
+    }
+    .manual-link:hover,
+    .manual-link:focus {
+      border-color: #9dbcf3;
+      background: var(--accent-soft);
+      color: var(--accent-strong);
+    }
+
+    .hint-panel {
+      position: relative;
+      margin: 0 !important;
+      padding: 10px 12px 10px 16px !important;
+      border: 1px solid #c9daf4 !important;
+      border-left: 4px solid var(--accent) !important;
+      border-radius: var(--radius-md);
+      background: linear-gradient(135deg, #f8fbff, #edf5ff) !important;
+      color: #29415f;
+      font-size: 13px;
+      box-shadow: var(--shadow-sm);
+      scrollbar-width: thin;
+      scrollbar-color: #a8bdd8 transparent;
+    }
+
+    .tab-shell {
+      margin: 0 !important;
+      padding: 10px;
+      border: 1px solid rgba(189, 202, 219, 0.82) !important;
+      border-radius: var(--radius-lg);
+      background: rgba(255, 255, 255, 0.96);
+      box-shadow: var(--shadow-md);
+      overflow: hidden !important;
+    }
+
+    .global-actions {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 7px;
+      margin: 0 0 10px;
+      padding: 0 0 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .global-actions .action-button,
+    .global-actions .action-button.primary {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-height: 50px;
+      padding: 6px 4px;
+      border-color: var(--border);
+      border-radius: 10px;
+      background: var(--surface-soft);
+      color: #33445e;
+      box-shadow: none;
+    }
+    .global-actions .action-button:hover:not(:disabled),
+    .global-actions .action-button.primary:hover:not(:disabled) {
+      border-color: #9dbcf3;
+      background: var(--accent-soft);
+      color: var(--accent-strong);
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.10);
+    }
+    .global-actions .action-button:is(#btnSolve, #btnStep, #btnApply) {
+      border-color: #b8cef6;
+      background: #f1f6ff;
+      color: #1d4ed8;
+    }
+    .global-actions .action-button:is(#btnGenerate, #btnLoad) {
+      border-color: #b9dfd2;
+      background: #f1fbf7;
+      color: #08785a;
+    }
+    .global-actions .action-icon svg {
+      width: 20px;
+      height: 20px;
+      stroke-width: 1.9;
+    }
+    .global-actions .action-label {
+      position: static;
+      width: auto;
+      height: auto;
+      margin: 0;
+      overflow: visible;
+      clip: auto;
+      color: inherit;
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 1.05;
+      white-space: nowrap;
+    }
+
+    .tab-list {
+      position: relative;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 4px;
+      padding: 4px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--surface-muted);
+    }
+    .tab-button {
+      min-height: 36px;
+      padding: 6px 8px;
+      border: 1px solid transparent;
+      border-radius: 9px;
+      background: transparent;
+      color: #56657a;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .tab-button:hover:not(.active) {
+      border-color: transparent;
+      background: rgba(255, 255, 255, 0.72);
+      color: #2f425e;
+    }
+    .tab-button.active {
+      border-color: rgba(37, 99, 235, 0.24);
+      background: #fff;
+      color: var(--accent-strong);
+      box-shadow: 0 2px 7px rgba(24, 45, 78, 0.10);
+    }
+
+    .tab-panel {
+      flex: 1 1 auto;
+      min-height: 0;
+      margin-top: 8px;
+      padding: 2px 3px 6px;
+      overflow: auto;
+      overscroll-behavior: contain;
+      scrollbar-width: thin;
+      scrollbar-color: #b6c4d6 transparent;
+    }
+    .tab-panel::-webkit-scrollbar { width: 8px; }
+    .tab-panel::-webkit-scrollbar-thumb {
+      border: 2px solid transparent;
+      border-radius: 999px;
+      background: #b6c4d6;
+      background-clip: padding-box;
+    }
+    #tabTechniques {
+      max-height: none;
+    }
+
+    /* Path and optional-steps panels keep their header controls fixed and give
+       the remaining height to exactly one scrolling tree. This avoids nested
+       vertical scrollbars from .tab-panel and .json-treeview. */
+    #tabPath:not([hidden]),
+    #tabAllSteps:not([hidden]) {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    #tabPath #tree,
+    #tabAllSteps #allStepsTree {
+      display: flex;
+      flex: 1 1 auto;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
+    }
+    #tabPath #tree > .json-treeview,
+    #tabAllSteps #allStepsTree > .json-treeview {
+      flex: 1 1 auto;
+      min-height: 0;
+      max-height: none;
+      overflow: auto;
+    }
+
+    #tabControls:not([hidden]) {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      align-content: start;
+      gap: 8px;
+    }
+    #tabControls > .generate-options {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      align-items: center;
+      gap: 8px;
+      min-height: 43px;
+      margin: 0;
+      padding: 6px 8px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface-soft);
+      color: #526278;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    #tabControls > .generate-options select {
+      width: 100%;
+      height: 31px;
+      border-radius: 8px;
+      background: #fff;
+      font-size: 12px;
+    }
+    #tabControls > .training-options .training-text-filter-button {
+      height: 31px;
+      min-width: 70px;
+      font-size: 11px;
+    }
+    #tabControls > :is(#numpad, details, .yzf-debug-panel) {
+      grid-column: 1 / -1;
+    }
+
+    .numpad {
+      gap: 7px;
+      margin: 0;
+      padding: 8px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--surface-soft);
+    }
+    .numpad button {
+      min-height: 43px;
+      border-color: #cbd6e4;
+      border-radius: 10px;
+      background: #fff;
+      color: #1f2d42;
+      font-size: 18px;
+      font-weight: 750;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    }
+    .numpad button:hover:not(:disabled) {
+      border-color: #93b6f4;
+      background: var(--accent-faint);
+    }
+    .numpad button.active {
+      border-color: var(--accent);
+      background: linear-gradient(180deg, #edf5ff, #dbeafe);
+      color: var(--accent-strong);
+      box-shadow: inset 0 0 0 1px rgba(37, 99, 235, 0.16), 0 3px 8px rgba(37, 99, 235, 0.12);
+    }
+    .numpad .mode-toggle {
+      color: #143f84;
+      background: #edf4ff;
+    }
+
+    #tabControls > details,
+    .tlg-solver-panel,
+    .manual-marks-panel,
+    .input-panel {
+      margin: 0;
+      padding: 0;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: #fff;
+      overflow: clip;
+      box-shadow: var(--shadow-sm);
+    }
+    #tabControls > details > summary,
+    .tlg-solver-panel > summary,
+    .manual-marks-panel > summary,
+    .input-panel > summary {
+      position: relative;
+      min-height: 40px;
+      padding: 10px 36px 10px 12px;
+      color: #34445b;
+      background: var(--surface-soft);
+      font-size: 13px;
+      font-weight: 750;
+      list-style: none;
+    }
+    #tabControls > details > summary::-webkit-details-marker { display: none; }
+    #tabControls > details > summary::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      right: 14px;
+      width: 7px;
+      height: 7px;
+      border-right: 2px solid #75849a;
+      border-bottom: 2px solid #75849a;
+      transform: translateY(-65%) rotate(45deg);
+      transition: transform 160ms ease;
+    }
+    #tabControls > details[open] > summary {
+      border-bottom: 1px solid var(--border);
+      background: #f4f7fb;
+      color: #21334e;
+    }
+    #tabControls > details[open] > summary::after {
+      transform: translateY(-30%) rotate(225deg);
+    }
+    #tabControls > details[open] > :not(summary) {
+      margin-left: 10px;
+      margin-right: 10px;
+    }
+    #tabControls > details[open] > :last-child {
+      margin-bottom: 10px;
+    }
+
+    textarea,
+    input[type="text"],
+    input[type="number"],
+    input[type="search"],
+    select {
+      border-radius: 9px;
+      background: #fff;
+      color: var(--ink);
+    }
+    textarea:hover,
+    input[type="text"]:hover,
+    input[type="number"]:hover,
+    input[type="search"]:hover,
+    select:hover {
+      border-color: #afc1d8;
+    }
+
+    .technique-toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      gap: 6px;
+      margin: 0 0 8px;
+      padding: 6px;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(8px);
+    }
+    .technique-toolbar button {
+      min-height: 34px;
+      padding: 5px 6px;
+      border-radius: 8px;
+      font-size: 11px;
+    }
+    .technique-table {
+      border-spacing: 0 5px;
+    }
+    .technique-row td {
+      border-color: #dde5ef;
+      background: #fff;
+    }
+    .technique-row:hover td {
+      border-color: #b7caf0;
+      background: #f7faff;
+    }
+
+    .json-treeview,
+    #tree,
+    #allStepsTree {
+      border-radius: 12px;
+    }
+    .tree-row {
+      border-radius: 6px;
+    }
+    .branch-panel {
+      border-radius: 11px;
+      box-shadow: var(--shadow-sm);
+    }
+    .all-steps-filter {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      padding: 8px;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      background: rgba(255, 255, 255, 0.96);
+      box-shadow: var(--shadow-sm);
+      backdrop-filter: blur(8px);
+    }
+
+    .tlg-solver-panel {
+      background: #fff;
+    }
+    .tlg-solver-grid {
+      gap: 8px;
+      padding-top: 2px;
+    }
+    .tlg-solver-controls {
+      gap: 7px;
+    }
+    .tlg-solver-controls button {
+      min-height: 34px;
+      border-radius: 8px;
+    }
+    .tlg-solver-status,
+    .batch-status,
+    .manual-mark-status {
+      border-radius: 8px;
+    }
+
+    @media (orientation: landscape) and (min-width: 700px) {
+      .app-shell {
+        padding: 8px !important;
+      }
+      .workspace {
+        height: calc(100dvh - 16px) !important;
+        max-height: calc(100dvh - 16px) !important;
+      }
+      .board-wrap,
+      :fullscreen .board-wrap,
+      :-webkit-full-screen .board-wrap {
+        height: calc(100dvh - 16px) !important;
+        max-height: calc(100dvh - 16px) !important;
+        padding: 8px !important;
+        column-gap: 12px;
+        row-gap: 8px;
+        --yzf-right-panel-min: 340px;
+        grid-template-columns: minmax(0, var(--yzf-board-size, min(62vw, calc(100dvh - 32px)))) minmax(var(--yzf-right-panel-min), 1fr);
+        grid-template-rows: 44px var(--yzf-hint-panel-height) minmax(0, 1fr) !important;
+        border: 0;
+        background: rgba(237, 243, 250, 0.70);
+        box-shadow: none;
+      }
+      .topbar {
+        height: 44px !important;
+        min-height: 44px !important;
+        max-height: 44px !important;
+      }
+      .tab-shell {
+        min-height: 0;
+      }
+    }
+
+    @media (orientation: landscape) and (max-height: 720px) {
+      .board-wrap,
+      :fullscreen .board-wrap,
+      :-webkit-full-screen .board-wrap {
+        --yzf-right-panel-min: 300px;
+      }
+      .brand-subtitle { display: none; }
+      .topbar {
+        padding: 4px 7px !important;
+      }
+      .manual-link,
+      .step-explain-button,
+      .topbar select {
+        min-height: 28px;
+        padding: 3px 7px;
+        font-size: 11px;
+      }
+      .global-actions {
+        grid-template-columns: repeat(10, minmax(0, 1fr));
+        gap: 4px;
+      }
+      .global-actions .action-button,
+      .global-actions .action-button.primary {
+        min-height: 34px;
+        padding: 5px 3px;
+      }
+      .global-actions .action-label { display: none; }
+      .tab-button { min-height: 32px; }
+      .numpad button { min-height: 36px; }
+      #tabControls > .generate-options { min-height: 36px; padding: 3px 6px; }
+    }
+
+    @media (orientation: landscape) and (min-width: 700px) and (max-width: 1100px) {
+      .brand-subtitle { display: none; }
+      .brand-title { font-size: 13px; }
+      .topbar {
+        gap: 4px;
+        padding: 4px 6px !important;
+      }
+      .manual-link,
+      .step-explain-button,
+      .topbar select {
+        min-height: 28px;
+        padding: 3px 5px;
+        font-size: 10.5px;
+      }
+    }
+
+    @media (orientation: landscape) and (max-height: 640px) and (max-width: 1180px) {
+      .board-wrap,
+      :fullscreen .board-wrap,
+      :-webkit-full-screen .board-wrap {
+        grid-template-rows: 38px var(--yzf-hint-panel-height) minmax(0, 1fr) !important;
+      }
+      .topbar,
+      :fullscreen .topbar,
+      :-webkit-full-screen .topbar {
+        height: 38px !important;
+        min-height: 38px !important;
+        max-height: 38px !important;
+      }
+    }
+
+    @media (orientation: portrait), (max-width: 699px) {
+      body {
+        background: #eef3f9;
+      }
+      .app-shell {
+        padding: 4px;
+      }
+      .board-wrap {
+        gap: 7px;
+        padding: 6px;
+        background: transparent;
+      }
+      .topbar {
+        min-height: 42px;
+        padding: 5px 7px !important;
+        flex-wrap: wrap;
+      }
+      .brand-subtitle { display: none; }
+      .manual-link,
+      .step-explain-button,
+      .topbar select {
+        min-height: 28px;
+        padding: 3px 7px;
+        font-size: 11px;
+      }
+      .tab-shell {
+        padding: 8px;
+      }
+      .global-actions {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+      }
+      .global-actions .action-label {
+        display: none;
+      }
+      .global-actions .action-button,
+      .global-actions .action-button.primary {
+        min-height: 38px;
+      }
+      #tabControls:not([hidden]) {
+        grid-template-columns: 1fr;
+      }
+      #tabControls > :is(.generate-options, #numpad, details, .yzf-debug-panel) {
+        grid-column: 1;
+      }
+      .tab-button {
+        padding: 5px 3px;
+        font-size: 12px;
+      }
+    }
+
+
+  
+
+    /* V438: forcing-chain branches are selected from the explanation text.
+       No branch widget is attached to the board, so branch switching cannot
+       cover, move, or resize the grid. */
+    .hint-panel .forcing-branch-nav {
+      display: grid;
+      gap: 4px;
+      margin-top: 8px;
+      padding-top: 7px;
+      border-top: 1px solid rgba(104, 139, 188, 0.28);
+    }
+    .hint-panel .forcing-branch-line {
+      display: flex;
+      width: 100%;
+      min-height: 28px;
+      margin: 0;
+      padding: 5px 8px;
+      align-items: flex-start;
+      justify-content: flex-start;
+      border: 1px solid transparent;
+      border-radius: 7px;
+      background: transparent;
+      color: #294b78;
+      box-shadow: none;
+      font: inherit;
+      line-height: 1.35;
+      text-align: left;
+      cursor: pointer;
+    }
+    .hint-panel .forcing-branch-line:hover {
+      border-color: rgba(87, 130, 194, 0.38);
+      background: rgba(219, 234, 254, 0.64);
+      color: #173f79;
+    }
+    .hint-panel .forcing-branch-line.is-selected {
+      border-color: rgba(37, 99, 235, 0.56);
+      background: rgba(219, 234, 254, 0.92);
+      color: #123d7a;
+      font-weight: 750;
+    }
+    .hint-panel .forcing-branch-index {
+      flex: 0 0 auto;
+      min-width: 2.2em;
+      color: #5b7293;
+      font-weight: 800;
+    }
+    .hint-panel .forcing-branch-text {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+    .hint-panel .forcing-branch-shortcut {
+      margin-top: 2px;
+      color: #64748b;
+      font-size: 11px;
+      line-height: 1.3;
+    }
+    @media (orientation: portrait), (max-width: 699px) {
+      .hint-panel .forcing-branch-nav {
+        gap: 3px;
+        margin-top: 6px;
+        padding-top: 5px;
+      }
+      .hint-panel .forcing-branch-line {
+        min-height: 26px;
+        padding: 4px 6px;
+        font-size: 12px;
+      }
+      .hint-panel .forcing-branch-shortcut {
+        display: none;
+      }
+    }
+
+    /* V439: dedicated mobile solve mode. The live board and number pad are
+       temporarily moved into this fixed viewport shell, so portrait and
+       landscape controls remain visible without scrolling the analysis UI. */
+    .mobile-solve-entry {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      min-height: 30px;
+      margin: 0;
+      padding: 4px 9px;
+      border: 1px solid #9dbcf3;
+      border-radius: 9px;
+      background: #edf5ff;
+      color: #174a91;
+      font-size: 12px;
+      font-weight: 750;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+    @media (max-width: 900px), (pointer: coarse) {
+      .mobile-solve-entry { display: inline-flex; }
+    }
+
+    body.mobile-solve-mode {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      overscroll-behavior: none;
+      touch-action: manipulation;
+      background: #eaf0f7;
+    }
+    body.mobile-solve-mode .app-shell,
+    .mobile-solve-shell[hidden] { display: none !important; }
+    .mobile-solve-shell {
+      --mobile-board-size: 360px;
+      --yzf-board-size: var(--mobile-board-size);
+      --yzf-cell-size: calc(var(--mobile-board-size) / 9);
+      --yzf-value-font-size: clamp(20px, calc(var(--mobile-board-size) / 15), 62px);
+      --yzf-candidate-font-size: clamp(7px, calc(var(--mobile-board-size) / 43), 20px);
+      --yzf-candidate-grid-padding: clamp(1px, calc(var(--mobile-board-size) / 180), 4px);
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      width: 100vw;
+      height: 100dvh;
+      min-width: 0;
+      min-height: 0;
+      /* V459: reserve only real device safe areas. The board may use the
+         remaining full viewport width/height; controls keep a small visual
+         inset through orientation-specific margins below. */
+      padding:
+        max(0px, env(safe-area-inset-top))
+        max(0px, env(safe-area-inset-right))
+        max(0px, env(safe-area-inset-bottom))
+        max(0px, env(safe-area-inset-left));
+      gap: 5px;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 20% 0%, rgba(219, 234, 254, 0.82), transparent 42%),
+        linear-gradient(180deg, #f6f9fd, #e9f0f8);
+      color: var(--ink);
+    }
+    .mobile-solve-shell.is-portrait {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: auto auto auto auto auto auto;
+      grid-template-areas:
+        "mobile-top"
+        "mobile-board"
+        "mobile-status"
+        "mobile-numpad"
+        "mobile-actions"
+        "mobile-marks";
+      align-content: start;
+    }
+    .mobile-solve-shell.is-landscape {
+      display: grid;
+      grid-template-columns: var(--mobile-board-size) minmax(150px, 1fr);
+      grid-template-rows: auto auto minmax(0, 1fr) auto;
+      grid-template-areas:
+        "mobile-board mobile-top"
+        "mobile-board mobile-status"
+        "mobile-board mobile-numpad"
+        "mobile-board mobile-actions";
+      column-gap: 8px;
+      row-gap: 5px;
+    }
+
+
+    /* Keep the control cards off the glass edge without shrinking the board. */
+    .mobile-solve-shell.is-portrait .mobile-solve-topbar,
+    .mobile-solve-shell.is-portrait .mobile-solve-status,
+    .mobile-solve-shell.is-portrait .mobile-solve-numpad-host,
+    .mobile-solve-shell.is-portrait .mobile-solve-actions,
+    .mobile-solve-shell.is-portrait .mobile-solve-marks-host {
+      margin-inline: 4px;
+    }
+    .mobile-solve-shell.is-landscape .mobile-solve-topbar,
+    .mobile-solve-shell.is-landscape .mobile-solve-status,
+    .mobile-solve-shell.is-landscape .mobile-solve-numpad-host,
+    .mobile-solve-shell.is-landscape .mobile-solve-actions {
+      margin-right: 4px;
+    }
+
+    .mobile-solve-topbar {
+      grid-area: mobile-top;
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 6px;
+      min-height: 38px;
+      padding: 4px 5px;
+      border: 1px solid rgba(183, 199, 220, 0.88);
+      border-radius: 11px;
+      background: rgba(255, 255, 255, 0.94);
+      box-shadow: 0 3px 12px rgba(28, 48, 78, 0.08);
+      backdrop-filter: blur(8px);
+    }
+    .mobile-solve-topbar button,
+    .mobile-solve-actions button,
+    .mobile-solve-drawer button {
+      min-width: 0;
+      min-height: 34px;
+      margin: 0;
+      padding: 5px 9px;
+      border-radius: 9px;
+      font-weight: 700;
+      line-height: 1.15;
+    }
+    .mobile-solve-title-wrap {
+      min-width: 0;
+      text-align: center;
+    }
+    .mobile-solve-title {
+      overflow: hidden;
+      color: #152744;
+      font-size: 14px;
+      font-weight: 850;
+      line-height: 1.1;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .mobile-solve-input-state {
+      margin-top: 1px;
+      overflow: hidden;
+      color: #62748c;
+      font-size: 10px;
+      font-weight: 650;
+      line-height: 1.15;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .mobile-solve-board-host {
+      grid-area: mobile-board;
+      display: flex;
+      min-width: 0;
+      min-height: 0;
+      align-items: center;
+      justify-content: center;
+      overflow: visible;
+    }
+    .mobile-solve-shell.is-portrait .mobile-solve-board-host {
+      align-items: flex-start;
+    }
+    .mobile-solve-shell .board-stage {
+      width: var(--mobile-board-size) !important;
+      height: var(--mobile-board-size) !important;
+      max-width: none !important;
+      margin: 0 !important;
+      flex: 0 0 var(--mobile-board-size);
+      filter: none;
+    }
+    .mobile-solve-shell .candidate-grid {
+      font-size: var(--yzf-candidate-font-size) !important;
+    }
+
+    /* V440: mobile solving refinements. Candidate visibility is a presentation
+       preference only; keeping the grid in flow preserves cell geometry. */
+    .mobile-solve-shell.mobile-hide-candidates .candidate-grid {
+      visibility: hidden;
+    }
+    .mobile-solve-shell .sudoku-cell.mobile-same-digit,
+    .mobile-solve-shell .sudoku-cell.mobile-same-digit-candidate {
+      background: #fff3c4;
+      box-shadow: inset 0 0 0 2px #f0a51a;
+    }
+    .mobile-solve-shell .sudoku-cell.mobile-same-digit-value .cell-value {
+      color: #9a4f08;
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.75);
+    }
+    .mobile-solve-shell .sudoku-cell.mobile-same-digit.selected,
+    .mobile-solve-shell .sudoku-cell.mobile-same-digit-candidate.selected,
+    .mobile-solve-shell .sudoku-cell.mobile-same-digit-value.selected {
+      background: #dceafe;
+      box-shadow: inset 0 0 0 3px #3478f6;
+    }
+    .mobile-solve-shell .sudoku-cell.mobile-same-digit-value.selected .cell-value {
+      color: inherit;
+      text-shadow: none;
+    }
+
+    .mobile-solve-status {
+      grid-area: mobile-status;
+      min-width: 0;
+      min-height: 29px;
+      max-height: 42px;
+      padding: 5px 9px;
+      overflow: hidden;
+      border: 1px solid #c7d8ef;
+      border-left: 4px solid var(--accent);
+      border-radius: 9px;
+      background: rgba(248, 251, 255, 0.96);
+      color: #304b6f;
+      font-size: 11px;
+      font-weight: 600;
+      line-height: 1.35;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .mobile-solve-numpad-host {
+      grid-area: mobile-numpad;
+      min-width: 0;
+      min-height: 0;
+      align-self: center;
+    }
+    .mobile-solve-shell .numpad {
+      display: grid !important;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      gap: 5px;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+    }
+    .mobile-solve-shell.is-portrait .numpad {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+    .mobile-solve-shell.is-landscape .numpad {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      align-content: center;
+    }
+    .mobile-solve-shell .numpad button {
+      min-width: 0;
+      min-height: 42px;
+      margin: 0;
+      padding: 4px 2px;
+      border-radius: 10px;
+      font-size: clamp(16px, 4.8vw, 22px);
+      touch-action: manipulation;
+    }
+    .mobile-solve-shell.is-landscape .numpad button {
+      min-height: 34px;
+      font-size: clamp(14px, 4.5vh, 19px);
+    }
+    .mobile-solve-shell.is-landscape .numpad .mode-toggle {
+      grid-column: 1 / -1;
+    }
+
+    .mobile-solve-actions {
+      grid-area: mobile-actions;
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 5px;
+      min-width: 0;
+    }
+    .mobile-solve-actions button {
+      min-height: 38px;
+      padding: 5px 4px;
+      background: rgba(255, 255, 255, 0.96);
+      color: #28415f;
+      font-size: 12px;
+      touch-action: manipulation;
+    }
+    .mobile-solve-actions button.mobile-primary {
+      border-color: #9ebcf1;
+      background: #edf5ff;
+      color: #164990;
+    }
+    .mobile-solve-actions button[data-mark-active="true"] {
+      border-color: #8eb3f2;
+      background: #e9f2ff;
+      color: #164990;
+      box-shadow: inset 0 0 0 1px rgba(52, 120, 246, 0.12);
+    }
+
+    /* V440: adaptive mobile manual-mark workspace. The existing live panel is
+       moved here on tall portrait screens, or into the overlay drawer when the
+       viewport is too short. No duplicate mark state or controls are created. */
+    .mobile-solve-marks-host[hidden],
+    .mobile-solve-marks-drawer-host[hidden] {
+      display: none !important;
+    }
+    .mobile-solve-marks-host {
+      grid-area: mobile-marks;
+      min-width: 0;
+      min-height: 0;
+      overflow: visible;
+    }
+    .mobile-solve-shell.is-landscape .mobile-solve-marks-host {
+      display: none !important;
+    }
+    .mobile-solve-marks-drawer-host {
+      min-width: 0;
+      margin-top: 4px;
+    }
+    .mobile-solve-drawer.mobile-marks-view .mobile-solve-drawer-grid,
+    .mobile-solve-drawer.mobile-marks-view .mobile-solve-language-row {
+      display: none !important;
+    }
+    .mobile-solve-shell .manual-marks-panel.mobile-manual-marks {
+      display: block;
+      width: 100%;
+      min-width: 0;
+      margin: 0;
+      padding: 6px;
+      overflow: hidden;
+      border: 1px solid #b9cce7;
+      border-radius: 11px;
+      background: rgba(248, 251, 255, 0.98);
+      box-shadow: 0 4px 14px rgba(32, 57, 91, 0.09);
+    }
+    .mobile-solve-shell .manual-marks-panel.mobile-manual-marks > summary {
+      display: none !important;
+    }
+    .mobile-solve-shell .manual-marks-panel.mobile-manual-marks .manual-marks-content {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(118px, 0.72fr);
+      grid-template-areas:
+        "mark-modes mark-actions"
+        "mark-color mark-color"
+        "mark-swatches mark-swatches"
+        "mark-buttons mark-buttons";
+      gap: 5px 6px;
+      min-width: 0;
+    }
+    .mobile-solve-shell .manual-marks-panel.mobile-manual-marks .manual-marks-grid {
+      grid-area: mark-modes;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 4px;
+      margin: 0;
+    }
+    .mobile-solve-shell .manual-marks-panel.mobile-manual-marks .manual-marks-grid label {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      align-items: center;
+      gap: 4px;
+      min-width: 0;
+      font-size: 10px;
+      white-space: nowrap;
+    }
+    .mobile-solve-shell .manual-marks-panel.mobile-manual-marks:not([data-mobile-mark-mode="chain"]) .manual-marks-grid label:nth-child(2) {
+      display: none;
+    }
+    .mobile-solve-shell .manual-marks-panel.mobile-manual-marks .manual-marks-grid select {
+      min-width: 0;
+      height: 30px;
+      padding: 2px 5px;
+      font-size: 11px;
+    }
+    .mobile-solve-shell .manual-marks-panel.mobile-manual-marks .manual-mark-actions {
+      grid-area: mark-actions;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 4px;
+      align-self: start;
+      margin: 0;
+    }
+    .mobile-solve-shell .manual-marks-panel.mobile-manual-marks .manual-mark-actions button {
+      min-height: 30px;
+      padding: 3px 4px;
+      font-size: 10.5px;
+    }
+    .mobile-solve-shell .manual-marks-panel.mobile-manual-marks .manual-mark-color-row {
+      grid-area: mark-color;
+      display: grid;
+      grid-template-columns: auto 30px minmax(0, 1fr);
+      gap: 5px;
+      margin: 0;
+      font-size: 10px;
+    }
+    .mobile-solve-shell .manual-marks-panel.mobile-manual-marks .manual-mark-color-row input[type="color"] {
+      width: 30px;
+      height: 28px;
+    }
+    .mobile-solve-shell .manual-marks-panel.mobile-manual-marks .manual-mark-color-row button {
+      height: 28px;
+      padding: 2px 5px;
+      font-size: 10.5px;
+    }
+    .mobile-solve-shell .manual-marks-panel.mobile-manual-marks .manual-mark-swatches {
+      grid-area: mark-swatches;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      min-width: 0;
+      min-height: 31px;
+      margin: 0;
+      padding: 0 0 1px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      overscroll-behavior-x: contain;
+      scrollbar-width: thin;
+    }
+    .mobile-solve-shell .manual-marks-panel.mobile-manual-marks .manual-mark-swatch {
+      flex: 0 0 31px;
+      width: 31px;
+      min-width: 31px;
+      height: 31px;
+      min-height: 31px;
+      border-radius: 9px;
+    }
+    .mobile-solve-shell .manual-marks-panel.mobile-manual-marks .manual-mark-swatch::after {
+      width: 23px;
+      height: 23px;
+    }
+    .mobile-solve-shell .manual-marks-panel.mobile-manual-marks .manual-mark-swatch.active::after {
+      width: 25px;
+      height: 25px;
+    }
+    .mobile-solve-shell .manual-marks-panel.mobile-manual-marks .manual-mark-buttons {
+      grid-area: mark-buttons;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 4px;
+      margin: 0;
+    }
+    .mobile-solve-shell .manual-marks-panel.mobile-manual-marks .manual-mark-buttons button,
+    .mobile-solve-shell .manual-marks-panel.mobile-manual-marks .manual-mark-cleaning {
+      min-width: 0;
+      min-height: 32px;
+      margin: 0;
+      padding: 3px 3px;
+      overflow: hidden;
+      font-size: 10px;
+      line-height: 1.08;
+      text-align: center;
+      white-space: normal;
+    }
+    .mobile-solve-shell .manual-marks-panel.mobile-manual-marks .manual-mark-cleaning {
+      grid-column: auto;
+      justify-content: center;
+      gap: 3px;
+    }
+    .mobile-solve-shell .manual-marks-panel.mobile-manual-marks:not([data-mobile-mark-mode="chain"]) #manualMarkUndoLine,
+    .mobile-solve-shell .manual-marks-panel.mobile-manual-marks:not([data-mobile-mark-mode="chain"]) #manualMarkCancelChain,
+    .mobile-solve-shell .manual-marks-panel.mobile-manual-marks:not([data-mobile-mark-mode="block"]) #manualMarkFinishBlock,
+    .mobile-solve-shell .manual-marks-panel.mobile-manual-marks:not([data-mobile-mark-mode="block"]) #manualMarkUndoBlock {
+      display: none !important;
+    }
+    .mobile-solve-shell .manual-marks-panel.mobile-manual-marks .manual-mark-cleaning input {
+      flex: 0 0 auto;
+      width: 14px;
+      height: 14px;
+    }
+    .mobile-solve-shell .manual-marks-panel.mobile-manual-marks .manual-mark-status {
+      display: none;
+    }
+    .mobile-solve-shell .manual-marks-panel.mobile-manual-marks[data-mobile-mark-mode="chain"] .manual-mark-buttons,
+    .mobile-solve-shell .manual-marks-panel.mobile-manual-marks[data-mobile-mark-mode="block"] .manual-mark-buttons {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+    /* V459: on short portrait phones, compact the controls before shrinking
+       the board. This keeps the puzzle nearly full-width while all controls
+       remain visible without scrolling. */
+    @media (orientation: portrait) and (max-height: 600px) {
+      .mobile-solve-shell { gap: 2px; }
+      .mobile-solve-topbar {
+        min-height: 34px;
+        padding-block: 2px;
+      }
+      .mobile-solve-topbar button {
+        min-height: 30px;
+        padding-block: 3px;
+      }
+      .mobile-solve-status {
+        min-height: 24px;
+        max-height: 28px;
+        padding: 3px 7px;
+        font-size: 10px;
+      }
+      .mobile-solve-shell .numpad { gap: 3px; }
+      .mobile-solve-shell.is-portrait .numpad button {
+        min-height: 34px;
+        padding-block: 2px;
+      }
+      .mobile-solve-actions { gap: 3px; }
+      .mobile-solve-actions button {
+        min-height: 32px;
+        padding-block: 3px;
+        font-size: 11px;
+      }
+    }
+
+    @media (max-width: 360px) {
+      .mobile-solve-actions { gap: 3px; }
+      .mobile-solve-actions button { padding-inline: 2px; }
+      .mobile-solve-shell .manual-marks-panel.mobile-manual-marks .manual-marks-content {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-areas:
+          "mark-modes"
+          "mark-actions"
+          "mark-color"
+          "mark-swatches"
+          "mark-buttons";
+      }
+    }
+
+    .mobile-solve-backdrop[hidden],
+    .mobile-solve-drawer[hidden] { display: none !important; }
+    .mobile-solve-backdrop {
+      position: absolute;
+      inset: 0;
+      z-index: 5;
+      background: rgba(15, 23, 42, 0.36);
+      backdrop-filter: blur(2px);
+    }
+    .mobile-solve-drawer {
+      position: absolute;
+      z-index: 6;
+      min-width: 0;
+      padding: 10px;
+      border: 1px solid rgba(170, 190, 218, 0.9);
+      background: rgba(255, 255, 255, 0.98);
+      box-shadow: 0 -10px 35px rgba(15, 23, 42, 0.22);
+      overflow: auto;
+      overscroll-behavior: contain;
+    }
+    .mobile-solve-shell.is-portrait .mobile-solve-drawer {
+      left: 4px;
+      right: 4px;
+      bottom: max(4px, env(safe-area-inset-bottom));
+      max-height: min(58dvh, 430px);
+      border-radius: 16px 16px 10px 10px;
+    }
+    .mobile-solve-shell.is-landscape .mobile-solve-drawer {
+      top: 4px;
+      right: 4px;
+      bottom: 4px;
+      width: min(360px, 48vw);
+      border-radius: 14px;
+      box-shadow: -10px 0 35px rgba(15, 23, 42, 0.22);
+    }
+    .mobile-solve-drawer-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 9px;
+    }
+    .mobile-solve-drawer-title {
+      color: #172a46;
+      font-size: 15px;
+      font-weight: 850;
+    }
+    .mobile-solve-drawer-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 7px;
+    }
+    .mobile-solve-drawer-grid button {
+      min-height: 42px;
+      margin: 0;
+      background: #f8fafc;
+      color: #29415f;
+    }
+    .mobile-solve-drawer-grid button[aria-pressed="true"] {
+      border-color: #8eb3f2;
+      background: #e9f2ff;
+      color: #164990;
+      box-shadow: inset 0 0 0 1px rgba(52, 120, 246, 0.12);
+    }
+    .mobile-solve-language-row {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      align-items: center;
+      gap: 8px;
+      margin-top: 10px;
+      padding-top: 9px;
+      border-top: 1px solid var(--border);
+      color: #526278;
+      font-size: 12px;
+      font-weight: 750;
+    }
+    .mobile-solve-language-row select {
+      width: 100%;
+      min-width: 0;
+      height: 36px;
+      margin: 0;
+    }
+
+    .mobile-solve-new-puzzle-backdrop[hidden],
+    .mobile-solve-new-puzzle-panel[hidden] { display: none !important; }
+    .mobile-solve-new-puzzle-backdrop {
+      position: absolute;
+      inset: 0;
+      z-index: 7;
+      background: rgba(15, 23, 42, 0.42);
+      backdrop-filter: blur(2px);
+    }
+    .mobile-solve-new-puzzle-panel {
+      position: absolute;
+      z-index: 8;
+      min-width: 0;
+      max-height: calc(100% - 8px);
+      padding: 12px;
+      overflow: auto;
+      border: 1px solid rgba(158, 183, 218, 0.96);
+      background: rgba(255, 255, 255, 0.99);
+      box-shadow: 0 -12px 38px rgba(15, 23, 42, 0.26);
+      overscroll-behavior: contain;
+    }
+    .mobile-solve-shell.is-portrait .mobile-solve-new-puzzle-panel {
+      left: 5px;
+      right: 5px;
+      bottom: max(5px, env(safe-area-inset-bottom));
+      border-radius: 17px 17px 11px 11px;
+    }
+    .mobile-solve-shell.is-landscape .mobile-solve-new-puzzle-panel {
+      top: 50%;
+      right: 6px;
+      width: min(400px, 49vw);
+      transform: translateY(-50%);
+      border-radius: 15px;
+      box-shadow: -12px 0 38px rgba(15, 23, 42, 0.26);
+    }
+    .mobile-solve-new-puzzle-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .mobile-solve-new-puzzle-header strong {
+      color: #172a46;
+      font-size: 16px;
+      font-weight: 850;
+    }
+    .mobile-solve-new-puzzle-header button,
+    .mobile-solve-new-puzzle-actions button {
+      min-height: 36px;
+      margin: 0;
+      padding: 6px 12px;
+      border-radius: 9px;
+      font-weight: 750;
+    }
+    .mobile-solve-new-puzzle-hint {
+      margin: 8px 0 0;
+      color: #5d6e84;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+    .mobile-solve-new-puzzle-warning {
+      margin: 8px 0 0;
+      padding: 7px 9px;
+      border: 1px solid #f1c48b;
+      border-radius: 9px;
+      background: #fff7e8;
+      color: #8a4b08;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.4;
+    }
+    .mobile-solve-new-puzzle-fieldset {
+      min-width: 0;
+      margin: 10px 0 0;
+      padding: 0;
+      border: 0;
+    }
+    .mobile-solve-new-puzzle-fieldset legend {
+      margin-bottom: 6px;
+      color: #425671;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .mobile-solve-new-puzzle-options {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 7px;
+    }
+    .mobile-solve-new-puzzle-options label {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      align-items: center;
+      gap: 7px;
+      min-width: 0;
+      min-height: 48px;
+      margin: 0;
+      padding: 6px 8px;
+      border: 1px solid #cbd8e8;
+      border-radius: 10px;
+      background: #f8fafc;
+      color: #29415f;
+      cursor: pointer;
+    }
+    .mobile-solve-new-puzzle-options label:has(input:checked) {
+      border-color: #73a3ee;
+      background: #eaf3ff;
+      box-shadow: inset 0 0 0 1px rgba(52, 120, 246, 0.16);
+    }
+    .mobile-solve-new-puzzle-options input {
+      width: 18px;
+      height: 18px;
+      margin: 0;
+      accent-color: #3478f6;
+    }
+    .mobile-solve-new-puzzle-options span {
+      display: grid;
+      min-width: 0;
+      gap: 2px;
+    }
+    .mobile-solve-new-puzzle-options b {
+      overflow: hidden;
+      font-size: 13px;
+      line-height: 1.15;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .mobile-solve-new-puzzle-options small {
+      color: #6b7b90;
+      font-size: 10px;
+      line-height: 1.1;
+    }
+    .mobile-solve-new-puzzle-actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 11px;
+    }
+    .mobile-solve-new-puzzle-actions .mobile-primary {
+      border-color: #3478f6;
+      background: #3478f6;
+      color: #fff;
+    }
+    .mobile-solve-new-puzzle-actions button:disabled {
+      opacity: 0.65;
+      cursor: wait;
+    }
+
+    @media (max-width: 360px) {
+      .mobile-solve-topbar button { padding-inline: 6px; font-size: 11px; }
+      .mobile-solve-actions button { font-size: 11px; }
+      .mobile-solve-shell .numpad button { min-height: 38px; }
+    }
+
+
+
+    /* V456: FB-aligned board geometry.
+       The 9 cell areas are equal-sized content tracks. Normal lines, box lines,
+       and the outer frame occupy their own tracks instead of shrinking selected
+       cells by different border widths. The two line parameters deliberately
+       stay independent so a future settings UI can change them without touching
+       board/chain geometry code. */
+    .board-wrap {
+      --yzf-grid-line-width: 1px;
+      --yzf-box-line-factor: 2;
+      --yzf-box-line-width: 2px;
+      --yzf-grid-line-color: #646464;
+      --yzf-box-line-color: #000000;
+      --yzf-cell-size: 72px;
+      --yzf-box-line-pos-1: 220px;
+      --yzf-box-line-pos-2: 440px;
+      --yzf-desktop-board-max: 700px;
+      --yzf-desktop-workspace-max: 1540px;
+    }
+    .sudoku-board {
+      grid-template-columns:
+        var(--yzf-cell-size, 72px) var(--yzf-grid-line-width, 1px)
+        var(--yzf-cell-size, 72px) var(--yzf-grid-line-width, 1px)
+        var(--yzf-cell-size, 72px) var(--yzf-box-line-width, 2px)
+        var(--yzf-cell-size, 72px) var(--yzf-grid-line-width, 1px)
+        var(--yzf-cell-size, 72px) var(--yzf-grid-line-width, 1px)
+        var(--yzf-cell-size, 72px) var(--yzf-box-line-width, 2px)
+        var(--yzf-cell-size, 72px) var(--yzf-grid-line-width, 1px)
+        var(--yzf-cell-size, 72px) var(--yzf-grid-line-width, 1px)
+        var(--yzf-cell-size, 72px) !important;
+      grid-template-rows:
+        var(--yzf-cell-size, 72px) var(--yzf-grid-line-width, 1px)
+        var(--yzf-cell-size, 72px) var(--yzf-grid-line-width, 1px)
+        var(--yzf-cell-size, 72px) var(--yzf-box-line-width, 2px)
+        var(--yzf-cell-size, 72px) var(--yzf-grid-line-width, 1px)
+        var(--yzf-cell-size, 72px) var(--yzf-grid-line-width, 1px)
+        var(--yzf-cell-size, 72px) var(--yzf-box-line-width, 2px)
+        var(--yzf-cell-size, 72px) var(--yzf-grid-line-width, 1px)
+        var(--yzf-cell-size, 72px) var(--yzf-grid-line-width, 1px)
+        var(--yzf-cell-size, 72px) !important;
+      border: 0 !important;
+      padding: var(--yzf-box-line-width, 2px) !important;
+      background: var(--yzf-grid-line-color, #646464) !important;
+      gap: 0 !important;
+      isolation: isolate;
+      overflow: hidden;
+    }
+    .sudoku-board::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+      /* One unified layer draws both the outer frame and the two inner box
+         separators. This avoids a browser-rounded CSS border disagreeing with
+         fractional future gridline/factorboxline settings. */
+      background:
+        linear-gradient(to right,
+          var(--yzf-box-line-color, #000000) 0,
+          var(--yzf-box-line-color, #000000) var(--yzf-box-line-width, 2px),
+          transparent var(--yzf-box-line-width, 2px),
+          transparent calc(100% - var(--yzf-box-line-width, 2px)),
+          var(--yzf-box-line-color, #000000) calc(100% - var(--yzf-box-line-width, 2px)),
+          var(--yzf-box-line-color, #000000) 100%),
+        linear-gradient(to bottom,
+          var(--yzf-box-line-color, #000000) 0,
+          var(--yzf-box-line-color, #000000) var(--yzf-box-line-width, 2px),
+          transparent var(--yzf-box-line-width, 2px),
+          transparent calc(100% - var(--yzf-box-line-width, 2px)),
+          var(--yzf-box-line-color, #000000) calc(100% - var(--yzf-box-line-width, 2px)),
+          var(--yzf-box-line-color, #000000) 100%),
+        linear-gradient(to right,
+          transparent 0,
+          transparent var(--yzf-box-line-pos-1, 220px),
+          var(--yzf-box-line-color, #000000) var(--yzf-box-line-pos-1, 220px),
+          var(--yzf-box-line-color, #000000) calc(var(--yzf-box-line-pos-1, 220px) + var(--yzf-box-line-width, 2px)),
+          transparent calc(var(--yzf-box-line-pos-1, 220px) + var(--yzf-box-line-width, 2px)),
+          transparent var(--yzf-box-line-pos-2, 440px),
+          var(--yzf-box-line-color, #000000) var(--yzf-box-line-pos-2, 440px),
+          var(--yzf-box-line-color, #000000) calc(var(--yzf-box-line-pos-2, 440px) + var(--yzf-box-line-width, 2px)),
+          transparent calc(var(--yzf-box-line-pos-2, 440px) + var(--yzf-box-line-width, 2px))),
+        linear-gradient(to bottom,
+          transparent 0,
+          transparent var(--yzf-box-line-pos-1, 220px),
+          var(--yzf-box-line-color, #000000) var(--yzf-box-line-pos-1, 220px),
+          var(--yzf-box-line-color, #000000) calc(var(--yzf-box-line-pos-1, 220px) + var(--yzf-box-line-width, 2px)),
+          transparent calc(var(--yzf-box-line-pos-1, 220px) + var(--yzf-box-line-width, 2px)),
+          transparent var(--yzf-box-line-pos-2, 440px),
+          var(--yzf-box-line-color, #000000) var(--yzf-box-line-pos-2, 440px),
+          var(--yzf-box-line-color, #000000) calc(var(--yzf-box-line-pos-2, 440px) + var(--yzf-box-line-width, 2px)),
+          transparent calc(var(--yzf-box-line-pos-2, 440px) + var(--yzf-box-line-width, 2px)));
+    }
+    .sudoku-cell,
+    .sudoku-cell.box-left,
+    .sudoku-cell.box-top,
+    .sudoku-cell.box-right,
+    .sudoku-cell.box-bottom {
+      border: 0 !important;
+      z-index: 1;
+    }
+    .candidate-grid {
+      padding: 0 !important;
+    }
+    @media (orientation: landscape) and (min-width: 700px) and (min-height: 641px) {
+      .app-shell,
+      .workspace {
+        max-width: var(--yzf-desktop-workspace-max, 1540px) !important;
+        margin-inline: auto !important;
+      }
+      .board-wrap,
+      :fullscreen .board-wrap,
+      :-webkit-full-screen .board-wrap {
+        grid-template-columns:
+          var(--yzf-board-size)
+          minmax(var(--yzf-right-panel-min), 1fr) !important;
+      }
+      :fullscreen .app-shell,
+      :-webkit-full-screen .app-shell,
+      :fullscreen .workspace,
+      :-webkit-full-screen .workspace {
+        width: 100% !important;
+        max-width: none !important;
+        margin-inline: 0 !important;
+      }
+    }
+
+</style>
+</head>
+<body>
+  <main class="app-shell">
+    <div class="workspace">
+      <section class="board-wrap card">
+        <header class="topbar">
+          <div class="brand">
+            <div class="brand-title">YZF_Sudoku</div>
+            <div id="brandSubtitle" class="brand-subtitle">移动优先逻辑训练器</div>
+          </div>
+          <a id="manualLink" class="manual-link" href="./user_manual.html?v=20260709-manual-v2.5-tlg-input-guard" target="_blank" rel="noopener">使用手册</a>
+          <button id="btnStepExplain" class="step-explain-button" type="button" disabled title="当前没有可解释的步骤。" aria-label="当前没有可解释的步骤。">解释</button>
+          <a id="techniquesLink" class="manual-link" href="./techniques.html" target="_blank" rel="noopener">技巧说明</a>
+          <button id="btnMobileSolveMode" class="mobile-solve-entry" type="button" title="做题模式" aria-label="做题模式">做题</button>
+          <label>
+            <span class="hidden">Language</span>
+            <select id="lang">
+              <option value="zh">中文</option>
+              <option value="en">English</option>
+            </select>
+          </label>
+        </header>
+        <div class="board-heading-row">
+          <h3 id="boardHeading">盘面</h3>
+        </div>
+        <div id="boardMeta" class="board-meta"></div>
+        <div id="boardStage" class="board-stage">
+          <svg id="yzfUnderlay" class="yzf-underlay" viewBox="0 0 900 900" aria-hidden="true"></svg>
+          <div id="board" class="sudoku-board"></div>
+          <svg id="yzfOverlay" class="yzf-overlay" viewBox="0 0 900 900" aria-hidden="true"></svg>
+        </div>
+        <div id="hintPanel" class="hint-panel">等待加载题面。</div>
+        <div id="stepExplainPanel" class="step-explain-panel hidden" aria-live="polite"></div>
+        <dialog id="stepExplainDialog" class="step-explain-dialog hidden">
+          <div class="step-explain-dialog-header">
+            <strong id="stepExplainDialogTitle">动态教程：为什么这一步成立</strong>
+            <button id="stepExplainDialogClose" class="step-explain-dialog-close" type="button">关闭</button>
+          </div>
+          <div id="stepExplainDialogContent" class="step-explain-dialog-content"></div>
+        </dialog>
+        <dialog id="trainingTextFilterDialog" class="training-text-filter-dialog" aria-labelledby="trainingTextFilterDialogTitle">
+          <form method="dialog" class="training-text-filter-panel">
+            <div class="training-text-filter-header">
+              <strong id="trainingTextFilterDialogTitle">训练文字过滤</strong>
+              <button id="btnTrainingTextFilterClose" class="training-text-filter-close" type="submit" value="cancel" aria-label="关闭">×</button>
+            </div>
+            <p id="trainingTextFilterIntro" class="training-text-filter-intro">过滤由前端指定，后端在同一个目标技巧步骤内完成匹配。</p>
+            <label class="training-text-filter-field">
+              <span id="trainingTextFilterIncludeLabel">必须包含</span>
+              <textarea id="trainingTextFilterInclude" rows="5" spellcheck="false" placeholder="每行一个条件；全部条件都必须出现在同一步中"></textarea>
+              <small id="trainingTextFilterIncludeHint">每行一个条件，全部满足。</small>
+            </label>
+            <label class="training-text-filter-field">
+              <span id="trainingTextFilterExcludeLabel">不得包含</span>
+              <textarea id="trainingTextFilterExclude" rows="4" spellcheck="false" placeholder="每行一个条件；命中任意一项即排除"></textarea>
+              <small id="trainingTextFilterExcludeHint">每行一个条件，命中任意一项即排除。</small>
+            </label>
+            <label class="training-text-filter-case">
+              <input id="trainingTextFilterCaseSensitive" type="checkbox" />
+              <span id="trainingTextFilterCaseSensitiveLabel">区分英文字母大小写</span>
+            </label>
+            <div class="training-text-filter-actions">
+              <button id="btnTrainingTextFilterClear" type="button">清空</button>
+              <span class="training-text-filter-spacer"></span>
+              <button id="btnTrainingTextFilterCancel" type="submit" value="cancel">取消</button>
+              <button id="btnTrainingTextFilterApply" class="primary" type="button">应用</button>
+            </div>
+          </form>
+        </dialog>
+        <div class="tab-shell">
+          <div class="global-actions" aria-label="主要操作">
+            <button id="btnGenerate" class="action-button compact primary" type="button" title="生成" aria-label="生成"><span class="action-icon" aria-hidden="true"><svg viewBox="0 0 24 24" role="img" aria-hidden="true"><rect x="3.5" y="3.5" width="13" height="13" rx="1.5"></rect><path d="M8 3.5v13M12.5 3.5v13M3.5 8h13M3.5 12.5h13"></path><circle cx="18.5" cy="18.5" r="4"></circle><path d="M18.5 16.7v3.6M16.7 18.5h3.6"></path></svg></span><span class="action-label">生成</span></button>
+            <button id="btnGenerateTraining" class="action-button compact" type="button" title="训练生成" aria-label="训练生成"><span class="action-icon" aria-hidden="true"><svg viewBox="0 0 24 24" role="img" aria-hidden="true"><path d="M9 3.5h6"></path><path d="M10.5 3.5v4.2l-4.4 7.3a3.4 3.4 0 0 0 2.9 5h6a3.4 3.4 0 0 0 2.9-5l-4.4-7.3V3.5"></path><path d="M8 14h8"></path><circle class="icon-fill" cx="10" cy="15.8" r="0.8"></circle><circle class="icon-fill" cx="13.2" cy="17.2" r="0.8"></circle></svg></span><span class="action-label">训练生成</span></button>
+            <button id="btnLoad" class="action-button compact primary" type="button" title="加载" aria-label="加载"><span class="action-icon" aria-hidden="true"><svg viewBox="0 0 24 24" role="img" aria-hidden="true"><path d="M3.5 8.5h6l1.7 2h9.3v7A2.5 2.5 0 0 1 18 20H6a2.5 2.5 0 0 1-2.5-2.5v-9A2 2 0 0 1 5.5 6.5h3.3l1.6 2"></path><path d="M3.8 10.5h16.4"></path></svg></span><span class="action-label">加载</span></button>
+            <button id="btnUndo" class="action-button compact" type="button" title="撤销" aria-label="撤销"><span class="action-icon" aria-hidden="true"><svg viewBox="0 0 24 24" role="img" aria-hidden="true"><path d="M9 7 5 11l4 4"></path><path d="M6 11h7a5 5 0 1 1 0 10h-1"></path></svg></span><span class="action-label">撤销</span></button>
+            <button id="btnRedo" class="action-button compact" type="button" title="重做" aria-label="重做"><span class="action-icon" aria-hidden="true"><svg viewBox="0 0 24 24" role="img" aria-hidden="true"><path d="m15 7 4 4-4 4"></path><path d="M18 11h-7a5 5 0 1 0 0 10h1"></path></svg></span><span class="action-label">重做</span></button>
+            <button id="btnSolve" class="action-button compact" type="button" title="自动解题" aria-label="自动解题"><span class="action-icon" aria-hidden="true"><svg viewBox="0 0 24 24" role="img" aria-hidden="true"><path d="M8.5 10.5c-1-.8-1.6-2-1.6-3.3A5.1 5.1 0 0 1 12 2.5a5.1 5.1 0 0 1 5.1 4.7c0 1.3-.6 2.5-1.6 3.3-.6.5-1 .9-1.2 1.5h-4.6c-.2-.6-.6-1-1.2-1.5Z"></path><path d="M10 14.5h4M10.8 17h2.4"></path><path d="M4.2 6.6 2.8 6.1M6.4 3.5 5.5 2.4M17.6 3.5l.9-1.1M19.8 6.6l1.4-.5M15.8 1.8l.4-1.1"></path><path d="M5 18.2c1.2-1.1 2.6-1.5 3.7-1.2.8.3 1.2 1 1.8 1.4.8.5 1.8.4 2.4-.2.4-.4.7-.9 1.2-1.2 1-.6 2.4-.2 4 1.2"></path></svg></span><span class="action-label">自动解题</span></button>
+            <button id="btnStep" class="action-button compact" type="button" title="提示一步" aria-label="提示一步"><span class="action-icon" aria-hidden="true"><svg viewBox="0 0 24 24" role="img" aria-hidden="true"><path d="M8.5 13.5c-1.1-.9-1.8-2.3-1.8-3.8A5.3 5.3 0 0 1 12 4.5a5.3 5.3 0 0 1 5.3 5.2c0 1.5-.7 2.9-1.8 3.8-.7.6-1.2 1.3-1.4 2H9.9c-.2-.7-.7-1.4-1.4-2Z"></path><path d="M10 18h4M10.8 20.5h2.4"></path><path d="M18.2 6.2h.01"></path></svg></span><span class="action-label">提示一步</span></button>
+            <button id="btnApply" class="action-button compact" type="button" title="应用提示" aria-label="应用提示"><span class="action-icon" aria-hidden="true"><svg viewBox="0 0 24 24" role="img" aria-hidden="true"><circle cx="12" cy="12" r="8"></circle><path d="M8.7 12.3l2.2 2.2 4.4-4.8"></path></svg></span><span class="action-label">应用提示</span></button>
+            <button id="btnAllSteps" class="action-button compact" type="button" title="所有步骤" aria-label="所有步骤"><span class="action-icon" aria-hidden="true"><svg viewBox="0 0 24 24" role="img" aria-hidden="true"><path d="M8.5 13.5c-1.1-.9-1.8-2.3-1.8-3.8A5.3 5.3 0 0 1 12 4.5a5.3 5.3 0 0 1 5.3 5.2c0 1.5-.7 2.9-1.8 3.8-.7.6-1.2 1.3-1.4 2H9.9c-.2-.7-.7-1.4-1.4-2Z"></path><path d="M10 18h4M10.8 20.5h2.4"></path><path d="M4.2 9.2 2.7 8.7M6.1 4.8 5.1 3.6M17.9 4.8l1-1.2M19.8 9.2l1.5-.5M15.8 2.9l.4-1.4"></path></svg></span><span class="action-label">所有步骤</span></button>
+            <button id="btnFullscreen" class="action-button compact" type="button" title="全屏" aria-label="全屏"><span class="action-icon" aria-hidden="true"><svg viewBox="0 0 24 24" role="img" aria-hidden="true"><path d="M9 4H4v5M15 4h5v5M20 15v5h-5M4 15v5h5"></path></svg></span><span class="action-label">全屏</span></button>
+          </div>
+          <div class="tab-list" role="tablist" aria-label="board tools">
+            <button id="tabBtnControls" class="tab-button active" type="button" role="tab" aria-selected="true" aria-controls="tabControls" data-tab="controls">操作</button>
+            <button id="tabBtnTechniques" class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="tabTechniques" data-tab="techniques">技巧</button>
+            <button id="tabBtnPath" class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="tabPath" data-tab="path">解题路径</button>
+            <button id="tabBtnAllSteps" class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="tabAllSteps" data-tab="allSteps">可选步骤</button>
+          </div>
+
+          <section id="tabControls" class="tab-panel" role="tabpanel" aria-labelledby="tabBtnControls" data-tab-panel="controls">
+              <label class="generate-options">
+                <span>难度</span>
+              <select id="difficultySelect" title="生成题目时使用参考项目的 ER 难度分档">
+                <option value="0">Random (ER 0-12.0)</option>
+                <option value="1">Easy (ER 0-1.5)</option>
+                <option value="2">Medium (ER 1.5-2.8)</option>
+                <option value="3">Hard (ER 2.8-6.0)</option>
+                <option value="4">Unfair (ER 6.0-8.0)</option>
+                <option value="5">Extreme (ER 8.0-9.3)</option>
+                <option value="6">Insane (ER 9.3-12.0)</option>
+              </select>
+            </label>
+            <div class="generate-options training-options">
+              <span>训练</span>
+              <div class="training-select-line">
+                <select id="trainingTechniqueSelect" title="生成解题路径中包含指定技巧的题目"></select>
+                <button id="btnTrainingTextFilter" class="training-text-filter-button" type="button" aria-pressed="false" title="文字过滤">
+                  <span id="trainingTextFilterButtonText">文字过滤</span>
+                </button>
+              </div>
+            </div>
+
+            <div id="numpad" class="numpad" aria-label="number pad"></div>
+
+
+            <details class="input-panel">
+              <summary>更多：题面输入与导出评分</summary>
+              <textarea id="givens">53..7....6..195....98....6.8...6...34..8.3..17...2...6.6....28....419..5....8..79</textarea>
+              <div class="ocr-import-actions">
+                <label id="preferClipboardLoadChip" class="ocr-toggle-chip" title="加载题目时优先使用剪贴板，失败后再用文本框" aria-label="加载题目时优先使用剪贴板，失败后再用文本框">
+                  <input id="preferClipboardLoad" type="checkbox" checked />
+                  <span id="preferClipboardLoadLabel">剪贴板优先</span>
+                </label>
+                <label id="btnImageOcrPick" class="ocr-file-button"><span id="btnImageOcrPickText">选择图片识别</span><input id="imageOcrInput" class="ocr-native-file-input" type="file" accept="image/*" /></label>
+                <label id="btnImageOcrCamera" class="ocr-file-button ocr-camera-action"><span id="btnImageOcrCameraText">拍照识别</span><input id="imageOcrCameraInput" class="ocr-native-file-input" type="file" accept="image/*" capture="environment" /></label>
+                <button id="btnImageOcrClipboard" type="button">从剪贴板识别</button>
+                <select id="exportFormatSelect" aria-label="导出格式" title="导出格式">
+                  <option value="original">原始题串</option>
+                  <option value="known">已知数字串</option>
+                  <option value="candidates">候选数字串</option>
+                  <option value="sukaku">Sukaku 字串</option>
+                  <option value="library" selected>Library 题串</option>
+                  <option value="coach">To Coach</option>
+                </select>
+                <button id="btnExportPuzzle">导出题串</button>
+                <button id="btnSharePuzzle" type="button" title="生成包含当前 Library 题串的链接，并复制到剪贴板。" aria-label="生成包含当前 Library 题串的链接，并复制到剪贴板。">分享题面</button>
+                <button id="btnClearSavedSession" type="button">清除本地保存</button>
+                <button id="btnRate">评分当前题目</button>
+              </div>
+            </details>
+            <details id="manualMarksPanel" class="manual-marks-panel">
+              <summary><span id="manualMarksTitle">手工标记</span></summary>
+              <div class="manual-marks-content">
+              <div class="manual-marks-grid">
+                <label class="manual-mark-mode-control"><span id="manualMarkModeLabel">模式</span><select id="manualMarkMode">
+                  <option value="off">关闭标记</option>
+                  <option value="cellColor">整格上色</option>
+                  <option value="candidateColor">候选上色</option>
+                  <option value="circle">候选画圈</option>
+                  <option value="preElim">预备删数</option>
+                  <option value="elim">正式删数</option>
+                  <option value="chain">手动画链</option>
+                  <option value="construction">构造链</option>
+                  <option value="miniRegion">微型区域</option>
+                  <option value="block">区块标记</option>
+                </select></label>
+                <label class="manual-mark-touch-only"><span id="manualMarkLineLabel">链线</span><select id="manualMarkLineType">
+                  <option value="strong">强链（实线）</option>
+                  <option value="weak">弱链（虚线）</option>
+                  <option value="constructionStrong">构造强链</option>
+                  <option value="constructionWeak">构造弱链</option>
+                </select></label>
+              </div>
+              <div class="manual-mark-actions manual-mark-touch-only" role="group" aria-label="manual mark action">
+                <button id="manualMarkPrimary" type="button" class="compact active">添加</button>
+                <button id="manualMarkSecondary" type="button" class="compact">清除</button>
+              </div>
+              <div class="manual-mark-color-row">
+                <span id="manualMarkColorLabel">颜色</span>
+                <input id="manualMarkCustomColor" type="color" value="#FFD54A" aria-label="custom mark color" />
+                <button id="manualMarkAddColor" type="button" class="compact"><span id="manualMarkAddColorText">添加自定义色</span></button>
+              </div>
+              <div id="manualMarkSwatches" class="manual-mark-swatches" aria-label="manual mark colors"></div>
+              <div class="manual-mark-buttons">
+                <button id="manualMarkApplyElims" type="button" class="compact primary">应用全部删数</button>
+                <button id="manualMarkScreenshot" type="button" class="compact" title="按屏幕当前显示原样截图盘面及全部手工标记。桌面端复制到剪贴板，手机端打开系统分享。" aria-label="按屏幕当前显示原样截图盘面及全部手工标记。桌面端复制到剪贴板，手机端打开系统分享。">截图</button>
+                <label class="manual-mark-cleaning"><input id="manualMarkCleanEasy" type="checkbox" /> <span id="manualMarkCleanEasyLabel">清除简单步骤</span></label>
+                <button id="manualMarkClear" type="button" class="compact">清空标记</button>
+                <button id="manualMarkUndoLine" type="button" class="compact">撤销线</button>
+                <button id="manualMarkCancelChain" type="button" class="compact">取消起点</button>
+                <button id="manualMarkFinishBlock" type="button" class="compact">完成区块</button>
+                <button id="manualMarkUndoBlock" type="button" class="compact">撤销区块</button>
+              </div>
+              <div id="manualMarkStatus" class="manual-mark-status">关闭标记。</div>
+              </div>
+            </details>
+
+            <details id="batchPanel" class="input-panel batch-panel">
+              <summary>批量任务</summary>
+              <div class="batch-grid">
+                <label>
+                  <span>模式</span>
+                  <select id="batchMode">
+                    <option value="generate" selected>批量出题</option>
+                    <option value="solve">批量解题</option>
+                  </select>
+                </label>
+                <label>
+                  <span>输出文件名</span>
+                  <input id="batchFilename" type="text" value="sudoku-batch.txt">
+                </label>
+                <label class="batch-solve-file-label hidden">
+                  <span>解题输入文件</span>
+                  <input id="batchSolveFile" type="file" accept=".txt,.csv,.tsv,text/plain">
+                </label>
+              </div>
+              <div class="batch-actions">
+                <button id="btnBatchGenerate" class="compact primary" type="button">开始</button>
+                <button id="btnBatchStop" class="compact" type="button" disabled>停止</button>
+              </div>
+              <div id="batchStatus" class="batch-status">批量出题/批量解题共用面板。批量出题持续写入输出文件，批量解题从文本文件读取，一行一题。</div>
+            </details>
+
+              <details id="tlgSolverPanel" class="tlg-solver-panel">
+                <summary><span id="tlgSolverTitle">TLG Solver</span></summary>
+                <div class="tlg-solver-grid">
+                  <label><input id="tlgSolverEnable" type="checkbox" /> <span id="tlgSolverEnableLabel">启用 TLG 编辑</span></label>
+                  <label><span id="tlgSolverModeLabel">输入模式</span>
+                    <select id="tlgSolverMode">
+                      <option value="truths">Truths</option>
+                      <option value="links">Links</option>
+                      <option value="virtualSet">Virtual Set</option>
+                      <option value="aur">AUR</option>
+                      <option value="daur">DAUR</option>
+                      <option value="gur">GUR</option>
+                    </select>
+                  </label>
+                  <label id="tlgSolverAurGroupWrap" hidden><span id="tlgSolverAurGroupLabel">AUR 分组</span>
+                    <select id="tlgSolverAurGroup">
+                      <option value="0">AUR 1</option>
+                      <option value="1">AUR 2</option>
+                    </select>
+                  </label>
+                  <label><span id="tlgSolverLinkTypeLabel">Link 类型</span>
+                    <select id="tlgSolverLinkType">
+                      <option value="auto">自动</option>
+                      <option value="rowColumn">行/列</option>
+                      <option value="box">宫</option>
+                      <option value="cell">单元格</option>
+                    </select>
+                  </label>
+                  <label><span id="tlgSolverTruthsToApplyLabel">应用 Truths 数</span>
+                    <input id="tlgSolverTruthsToApply" type="number" min="0" max="81" value="0" />
+                  </label>
+                  <label><span id="tlgSolverAurPremiseModeLabel">唯一性门控</span>
+                    <select id="tlgSolverAurPremiseMode">
+                      <option value="unique-puzzle-derived" selected>唯一解：核验初始可交换局面</option>
+                      <option value="candidate-grid-asserted">训练盘：允许初始缺数</option>
+                    </select>
+                  </label>
+                </div>
+                <div class="tlg-solver-controls" role="group" aria-label="TLG Solver 操作">
+                  <button id="btnTlgImportCandidates" type="button" class="compact">导入 TLG 候选盘面</button>
+                  <button id="btnTlgFindEliminations" type="button" class="compact primary">查找删数</button>
+                  <button id="btnTlgConvertTruths" type="button" class="compact" disabled>转换冗余 Truths</button>
+                  <button id="btnTlgRemoveUnused" type="button" class="compact" disabled>移除未使用 Links</button>
+                  <button id="btnTlgClear" type="button" class="compact">清空 TLG 状态</button>
+                  <button id="btnTlgLibrary" type="button" class="compact">TLG 题库</button>
+                </div>
+                <div id="tlgSolverStatus" class="tlg-solver-status">TLG Solver 是可选附加功能；未启用 TLG 编辑时不会影响现有解题流程。</div>
+                <div id="tlgSolverSolutionPanel" class="tlg-solver-solution-panel" aria-live="polite" hidden>
+                  <div id="tlgSolverSolutionTitle" class="tlg-solver-solution-title">Truths/Links Solution</div>
+                  <pre id="tlgSolverSolution" class="tlg-solver-solution" hidden></pre>
+                </div>
+                <div class="tlg-solver-state-panel" aria-live="polite">
+                  <div id="tlgSolverStateTitle" class="tlg-solver-state-title">当前 TLG 状态</div>
+                  <div id="tlgSolverStateList" class="tlg-solver-state-list">暂无 TLG 输入。</div>
+                </div>
+                <details id="tlgSolverDebug" class="tlg-solver-debug" hidden>
+                  <summary id="tlgSolverDebugSummary">调试 / 导入</summary>
+                  <textarea id="tlgSolverImportText" class="tlg-solver-textarea" spellcheck="false" placeholder="仅用于调试导入；TLG 主要通过盘面点击输入。"></textarea>
+                  <pre id="tlgSolverRaw" class="tlg-solver-json" hidden></pre>
+                </details>
+              </details>
+              <dialog id="tlgLibraryDialog" class="tlg-library-dialog" aria-labelledby="tlgLibraryDialogTitle">
+                <div class="tlg-library-shell">
+                  <div class="tlg-library-header">
+                    <strong id="tlgLibraryDialogTitle">TLG 逻辑题库</strong>
+                    <button id="btnTlgLibraryClose" type="button" class="compact" aria-label="关闭">×</button>
+                  </div>
+                  <div class="tlg-library-toolbar" role="group" aria-label="题库记录操作">
+                    <button id="btnTlgLibraryRead" type="button" class="compact primary">读取</button>
+                    <button id="btnTlgLibraryInsert" type="button" class="compact">插入</button>
+                    <button id="btnTlgLibraryReplace" type="button" class="compact">替换</button>
+                    <button id="btnTlgLibraryAppend" type="button" class="compact">追加</button>
+                    <button id="btnTlgLibraryDelete" type="button" class="compact">删除</button>
+                  </div>
+                  <div class="tlg-library-filebar">
+                    <label><span id="tlgLibraryImportModeLabel">导入方式</span>
+                      <select id="tlgLibraryImportMode">
+                        <option value="append">追加到末尾</option>
+                        <option value="insert">插入到当前位置</option>
+                        <option value="replaceAll">替换整个题库</option>
+                      </select>
+                    </label>
+                    <button id="btnTlgLibraryImport" type="button" class="compact">导入 .tlgdb</button>
+                    <button id="btnTlgLibraryExportSelected" type="button" class="compact">导出选中</button>
+                    <button id="btnTlgLibraryExportAll" type="button" class="compact">导出题库</button>
+                    <input id="tlgLibraryFileInput" type="file" accept=".tlgdb,application/octet-stream" hidden />
+                  </div>
+                  <div class="tlg-library-sharebar" role="group" aria-label="TLG 文字样例操作">
+                    <button id="btnTlgLibraryCopyText" type="button" class="compact">复制样例</button>
+                    <button id="btnTlgLibraryCopyCompact" type="button" class="compact">复制单行</button>
+                    <button id="btnTlgLibraryPasteText" type="button" class="compact">粘贴样例</button>
+                    <button id="btnTlgLibraryImportText" type="button" class="compact">导入文本</button>
+                    <button id="btnTlgLibraryExportText" type="button" class="compact">导出文本</button>
+                    <input id="tlgLibraryTextFileInput" type="file" accept=".tlg.txt,.txt,text/plain" hidden />
+                  </div>
+                  <div id="tlgLibrarySharePanel" class="tlg-library-share-panel" hidden>
+                    <label><span id="tlgLibraryShareTextLabel">文字样例</span>
+                      <textarea id="tlgLibraryShareText" spellcheck="false" placeholder="粘贴 YZF-TLG-CASE:1 多行样例，或 YZFTLG1 单行样例。"></textarea>
+                    </label>
+                    <div class="tlg-library-share-actions">
+                      <button id="btnTlgLibraryLoadText" type="button" class="compact primary">载入样例</button>
+                      <button id="btnTlgLibraryClearText" type="button" class="compact">清空</button>
+                      <button id="btnTlgLibraryCloseText" type="button" class="compact">收起</button>
+                    </div>
+                    <div id="tlgLibraryShareSummary" class="tlg-library-share-summary" aria-live="polite">可粘贴别人分享的 TLG 文字样例；解析成功后会先显示结构摘要。</div>
+                  </div>
+                  <div class="tlg-library-main">
+                    <section class="tlg-library-list-panel" aria-label="TLG 题库记录">
+                      <div class="tlg-library-search-row">
+                        <input id="tlgLibrarySearch" type="search" autocomplete="off" placeholder="搜索标题、标签、来源或笔记" />
+                        <span id="tlgLibraryCount" class="tlg-library-count">0 / 0</span>
+                      </div>
+                      <div class="tlg-library-table-wrap">
+                        <table class="tlg-library-table">
+                          <thead><tr>
+                            <th id="tlgLibraryColumnIndex">序号</th>
+                            <th id="tlgLibraryColumnTitle">标题</th>
+                            <th id="tlgLibraryColumnType">类型</th>
+                            <th id="tlgLibraryColumnResult">结构</th>
+                          </tr></thead>
+                          <tbody id="tlgLibraryList"></tbody>
+                        </table>
+                        <div id="tlgLibraryEmpty" class="tlg-library-empty">题库尚无记录。</div>
+                      </div>
+                    </section>
+                    <section class="tlg-library-editor" aria-label="TLG 记录资料">
+                      <label><span id="tlgLibraryTitleLabel">标题</span><input id="tlgLibraryTitle" type="text" autocomplete="off" /></label>
+                      <label><span id="tlgLibraryTagsLabel">标签</span><input id="tlgLibraryTags" type="text" autocomplete="off" placeholder="例如：AUR, Rank 0" /></label>
+                      <label><span id="tlgLibrarySourceLabel">来源</span><input id="tlgLibrarySource" type="text" autocomplete="off" /></label>
+                      <label><span id="tlgLibraryNotesLabel">学习笔记</span><textarea id="tlgLibraryNotes"></textarea></label>
+                      <div id="tlgLibraryRecordSummary" class="tlg-library-summary">请选择一条记录，或填写资料后保存当前 TLG。</div>
+                    </section>
+                  </div>
+                  <div id="tlgLibraryStatus" class="tlg-library-status" aria-live="polite">本地题库使用固定 2048 字节记录；请定期导出 .tlgdb 备份。</div>
+                </div>
+              </dialog>
+              <div class="yzf-debug-panel">
+                <div class="yzf-debug-title">YZF typ=4 debug sample</div>
+              <div class="yzf-debug-controls">
+                <select id="yzfDebugSampleSelect">
+                  <option value="yzf_typ4_grouped_with_candidates">grouped_with_candidates</option>
+                  <option value="yzf_typ4_grouped_no_candidates">grouped_no_candidates</option>
+                  <option value="yzf_typ4_no_debug_path">no_debug_path</option>
+                  <option value="yzf_typ4_promoted_grouped_aic_stepresult">promoted_grouped_aic_stepresult</option>
+                </select>
+                <button id="btnYzfDebugLoad" type="button" class="compact">Load</button>
+                <button id="btnYzfDebugClear" type="button" class="compact">Clear</button>
+              </div>
+              <div id="yzfOverlayModeNote" class="yzf-debug-note">仅调试，不作为正式删数</div>
+              <div id="yzfOverlayStatus" class="yzf-debug-status hidden">仅调试，不作为正式删数</div>
+              <details class="yzf-debug-legend">
+                <summary>图例</summary>
+                <div class="yzf-debug-legend-grid">
+                  <div class="yzf-legend-item">
+                    <span class="yzf-legend-chip node on"></span>
+                    <span>ON node：绿色小点</span>
+                  </div>
+                  <div class="yzf-legend-item">
+                    <span class="yzf-legend-chip node off"></span>
+                    <span>OFF node：橙色小点</span>
+                  </div>
+                  <div class="yzf-legend-item">
+                    <span class="yzf-legend-chip group-sector">G#</span>
+                    <span>GroupedSector：组合候选区域</span>
+                  </div>
+                  <div class="yzf-legend-item">
+                    <span class="yzf-legend-chip edge strong"></span>
+                    <span>Strong edge：实线</span>
+                  </div>
+                  <div class="yzf-legend-item">
+                    <span class="yzf-legend-chip edge weak"></span>
+                    <span>Weak edge：虚线</span>
+                  </div>
+                  <div class="yzf-legend-item">
+                    <span class="yzf-legend-chip edge group">g</span>
+                    <span>组合边：紫色</span>
+                  </div>
+                  <div class="yzf-legend-item">
+                    <span class="yzf-legend-chip candidate" style="background:#ffcbcb;color:#7a0012;border-radius:999px;padding:1px 7px;">6</span>
+                    <span>AF 辅助：cover row 水平，cover column 垂直</span>
+                  </div>
+                  <div class="yzf-legend-item">
+                    <span class="yzf-legend-chip candidate">×</span>
+                    <span>Debug candidate：红叉，仅调试</span>
+                  </div>
+                </div>
+                </details>
+              </div>
+              <!-- Manual Advanced was a debug-only panel and is intentionally omitted from the production UI. -->
+
+          </section>
+
+          <section id="tabTechniques" class="tab-panel" role="tabpanel" aria-labelledby="tabBtnTechniques" data-tab-panel="techniques" hidden>
+            <div class="technique-toolbar">
+              <button id="btnTechAllIn" class="compact primary" type="button">全选</button>
+              <button id="btnTechHighSpeed" class="compact" type="button">高速</button>
+              <button id="btnTechExtremeSpeed" class="compact" type="button">极速</button>
+              <button id="btnTechWhipRating" class="compact" type="button">whip评分</button>
+              <button id="btnTechBraidRating" class="compact" type="button">braid评分</button>
+            </div>
+            <div id="techniqueList" class="technique-list"></div>
+          </section>
+
+          <section id="tabPath" class="tab-panel" role="tabpanel" aria-labelledby="tabBtnPath" data-tab-panel="path" hidden>
+            <div id="branchPanel" class="branch-panel hidden" aria-live="polite"></div>
+            <div id="tree"></div>
+          </section>
+
+          <section id="tabAllSteps" class="tab-panel" role="tabpanel" aria-labelledby="tabBtnAllSteps" data-tab-panel="allSteps" hidden>
+            <div class="all-steps-filter" aria-label="可选步骤过滤">
+              <input id="allStepsFilterText" type="search" placeholder="过滤：技巧、删数或描述" autocomplete="off" aria-label="过滤可选步骤">
+              <select id="allStepsFilterTechnique" aria-label="按技巧过滤"><option value="">全部技巧</option></select>
+              <select id="allStepsSortMode" aria-label="可选步骤排序"><option value="default">默认排序</option><option value="conclusion">出数/删数优先</option></select>
+              <label><input id="allStepsFilterReplaceable" type="checkbox"> 可替换</label>
+              <button id="allStepsFilterClear" type="button" class="compact">清除</button>
+              <div id="allStepsFilterStatus" class="all-steps-filter-status">暂无可选步骤。</div>
+            </div>
+            <div id="allStepsTree"></div>
+          </section>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <section id="mobileSolveShell" class="mobile-solve-shell is-portrait" hidden aria-label="手机做题模式">
+    <header class="mobile-solve-topbar">
+      <button id="btnMobileSolveExit" type="button">返回</button>
+      <div class="mobile-solve-title-wrap">
+        <div id="mobileSolveTitle" class="mobile-solve-title">做题模式</div>
+        <div id="mobileSolveInputState" class="mobile-solve-input-state">出数 · 1</div>
+      </div>
+      <button id="btnMobileSolveNewPuzzle" type="button" aria-expanded="false">新题</button>
+    </header>
+    <div id="mobileSolveBoardHost" class="mobile-solve-board-host"></div>
+    <div id="mobileSolveStatus" class="mobile-solve-status" aria-live="polite">等待加载题面。</div>
+    <div id="mobileSolveNumpadHost" class="mobile-solve-numpad-host"></div>
+    <div class="mobile-solve-actions" aria-label="做题操作">
+      <button id="btnMobileSolveClear" type="button">清除</button>
+      <button id="btnMobileSolveUndo" type="button">撤销</button>
+      <button id="btnMobileSolveRedo" type="button">重做</button>
+      <button id="btnMobileSolveMarks" type="button" aria-pressed="false">标记</button>
+      <button id="btnMobileSolveMore" class="mobile-primary" type="button">更多</button>
+    </div>
+    <div id="mobileSolveMarksHost" class="mobile-solve-marks-host" hidden></div>
+    <div id="mobileSolveBackdrop" class="mobile-solve-backdrop" hidden></div>
+    <aside id="mobileSolveDrawer" class="mobile-solve-drawer" hidden aria-label="更多功能">
+      <div class="mobile-solve-drawer-header">
+        <strong id="mobileSolveDrawerTitle" class="mobile-solve-drawer-title">更多功能</strong>
+        <button id="btnMobileSolveDrawerClose" type="button">关闭</button>
+      </div>
+      <div class="mobile-solve-drawer-grid">
+        <button id="btnMobileSolveHint" type="button">提示一步</button>
+        <button id="btnMobileSolveApply" type="button">应用提示</button>
+        <button id="btnMobileSolveAllSteps" type="button">可选步骤</button>
+        <button id="btnMobileSolveInput" type="button">题面输入</button>
+        <button id="btnMobileSolveCandidates" type="button" aria-pressed="false">隐藏候选数</button>
+        <button id="btnMobileSolveSameDigit" type="button" aria-pressed="true">关闭同数字高亮</button>
+        <button id="btnMobileSolveFullscreen" type="button">全屏</button>
+        <button id="btnMobileSolveAnalysis" type="button">分析模式</button>
+      </div>
+      <div id="mobileSolveMarksDrawerHost" class="mobile-solve-marks-drawer-host" hidden></div>
+      <label class="mobile-solve-language-row">
+        <span id="mobileSolveLanguageLabel">语言</span>
+        <select id="mobileSolveLang" aria-label="语言">
+          <option value="zh">中文</option>
+          <option value="en">English</option>
+        </select>
+      </label>
+    </aside>
+    <div id="mobileSolveNewPuzzleBackdrop" class="mobile-solve-new-puzzle-backdrop" hidden></div>
+    <section id="mobileSolveNewPuzzlePanel" class="mobile-solve-new-puzzle-panel" role="dialog" aria-modal="true" aria-labelledby="mobileSolveNewPuzzleTitle" hidden>
+      <div class="mobile-solve-new-puzzle-header">
+        <strong id="mobileSolveNewPuzzleTitle">生成新题</strong>
+        <button id="btnMobileSolveNewPuzzleClose" type="button">关闭</button>
+      </div>
+      <p id="mobileSolveNewPuzzleHint" class="mobile-solve-new-puzzle-hint">选择难度后生成，生成完成后继续留在做题模式。</p>
+      <p id="mobileSolveNewPuzzleWarning" class="mobile-solve-new-puzzle-warning" hidden>当前作答进度或标记将在生成新题后清除。</p>
+      <fieldset class="mobile-solve-new-puzzle-fieldset">
+        <legend id="mobileSolveNewPuzzleDifficultyLegend">难度</legend>
+        <div id="mobileSolveNewPuzzleOptions" class="mobile-solve-new-puzzle-options" role="radiogroup" aria-labelledby="mobileSolveNewPuzzleDifficultyLegend">
+          <label><input type="radio" name="mobileSolveNewPuzzleDifficulty" value="0" /><span><b id="mobileSolveDifficultyLabel0">随机</b><small>ER 0–12.0</small></span></label>
+          <label><input type="radio" name="mobileSolveNewPuzzleDifficulty" value="1" /><span><b id="mobileSolveDifficultyLabel1">简单</b><small>ER 0–1.5</small></span></label>
+          <label><input type="radio" name="mobileSolveNewPuzzleDifficulty" value="2" /><span><b id="mobileSolveDifficultyLabel2">中等</b><small>ER 1.5–2.8</small></span></label>
+          <label><input type="radio" name="mobileSolveNewPuzzleDifficulty" value="3" /><span><b id="mobileSolveDifficultyLabel3">困难</b><small>ER 2.8–6.0</small></span></label>
+          <label><input type="radio" name="mobileSolveNewPuzzleDifficulty" value="4" /><span><b id="mobileSolveDifficultyLabel4">不公平</b><small>ER 6.0–8.0</small></span></label>
+          <label><input type="radio" name="mobileSolveNewPuzzleDifficulty" value="5" /><span><b id="mobileSolveDifficultyLabel5">极难</b><small>ER 8.0–9.3</small></span></label>
+          <label><input type="radio" name="mobileSolveNewPuzzleDifficulty" value="6" /><span><b id="mobileSolveDifficultyLabel6">疯狂</b><small>ER 9.3–12.0</small></span></label>
+        </div>
+      </fieldset>
+      <div class="mobile-solve-new-puzzle-actions">
+        <button id="btnMobileSolveNewPuzzleCancel" type="button">取消</button>
+        <button id="btnMobileSolveNewPuzzleGenerate" class="mobile-primary" type="button">生成</button>
+      </div>
+    </section>
+  </section>
+
+
+
+    <!-- V442: correct ASCII candidate-grid import; singleton cells stay large digits. -->
+    <script type="module" src="./app.js?v=20260714-url-share-v1"></script>
+  </body>
+</html>

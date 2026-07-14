@@ -1,0 +1,59 @@
+import createModule from "./sudoku_wasm.js?v=wasm-db5fc69e13fa517a";
+
+const APP_VERSION = "wasm-db5fc69e13fa517a";
+
+let enginePromise = null;
+
+async function getEngine() {
+  if (!enginePromise) {
+    enginePromise = createModule({
+      locateFile: (path) => path.endsWith(".wasm") ? `./${path}?v=${APP_VERSION}` : path,
+    }).then((mod) => new mod.Engine());
+  }
+  return enginePromise;
+}
+
+self.addEventListener("message", async (event) => {
+  const message = event.data || {};
+  if (message.type !== "generate") {
+    return;
+  }
+
+  try {
+    const engine = await getEngine();
+    const textFilter = message.textFilter && typeof message.textFilter === "object"
+      ? message.textFilter
+      : { includeText: "", excludeText: "", caseSensitive: false };
+    const filteredMethod = message.summary
+      ? "generate_training_puzzle_summary_filtered_json"
+      : "generate_training_puzzle_filtered_json";
+    const legacyMethod = message.summary
+      ? "generate_training_puzzle_summary_json"
+      : "generate_training_puzzle_json";
+    const filterActive = Boolean(String(textFilter.includeText || "").trim() || String(textFilter.excludeText || "").trim());
+    let resultText = "";
+    if (typeof engine[filteredMethod] === "function") {
+      resultText = engine[filteredMethod](
+        message.kind || "BruteForce",
+        Number(message.difficulty || 0),
+        Number(message.maxAttempts || 0),
+        JSON.stringify(textFilter)
+      );
+    } else if (!filterActive && typeof engine[legacyMethod] === "function") {
+      resultText = engine[legacyMethod](
+        message.kind || "BruteForce",
+        Number(message.difficulty || 0),
+        Number(message.maxAttempts || 0)
+      );
+    } else {
+      throw new Error("Training text filtering is unavailable in this WASM build");
+    }
+    self.postMessage({ type: "result", resultText });
+  } catch (error) {
+    self.postMessage({
+      type: "error",
+      error: error instanceof Error ? error.message : String(error),
+      errorCode: error?.code || "WORKER_RUNTIME_FAILED",
+    });
+  }
+});
